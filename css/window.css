@@ -6,10 +6,10 @@
   min-height: 140px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--r-xl);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  animation: win-open 0.18s ease-out;
+  animation: win-open 0.24s var(--ease);
 }
 
 .window.focused {
@@ -32,8 +32,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 8px 8px 14px;
-  background: color-mix(in srgb, var(--bg) 55%, var(--surface));
+  padding: 9px 9px 9px 15px;
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   cursor: grab;
   user-select: none;

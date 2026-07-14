@@ -1,7 +1,7 @@
 // Service worker — precache app shell ทั้งหมด ใช้ offline ได้เต็มตัว
 // เปลี่ยนไฟล์เมื่อไหร่ให้ bump VERSION เพื่อบังคับ cache ใหม่
 
-const VERSION = "pp-os-v5";
+const VERSION = "pp-os-v6";
 
 const SHELL = [
   "./",
@@ -20,6 +20,7 @@ const SHELL = [
   "./js/core/app-registry.js",
   "./js/core/apple-health.js",
   "./js/core/storage.js",
+  "./js/core/ui.js",
   "./js/apps/me.js",
   "./js/apps/notes.js",
   "./js/apps/todo.js",

@@ -18,19 +18,20 @@ body.mode-app {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  transition: background var(--dur) var(--ease);
 }
 
 /* พื้นของ scroll container ต้องเป็นสีเดียวกับแอป ไม่งั้นตอน overscroll จะเห็นแถบสีแปลกปลอม */
 #shell[data-tab="health"] #shell-view {
-  background: #0c1014;
+  background: #0a0e12;
 }
 
 #shell[data-tab="money"] #shell-view {
-  background: #0f120e;
+  background: #0d100c;
 }
 
 #shell[data-tab="weather"] #shell-view {
-  background: #faf4e4;
+  background: #faf5e9;
 }
 
 #shell-view > .view,
@@ -38,72 +39,103 @@ body.mode-app {
   min-height: 100%;
   display: flex;
   flex-direction: column;
+  animation: view-in 300ms var(--ease);
+}
+
+/* เข้าแท็บใหม่ = เนื้อหาไหลขึ้นมาเบาๆ ไม่ใช่กระพริบเปลี่ยน */
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 
 .sub-wrap > .view {
   flex: 1;
   display: flex;
   flex-direction: column;
+  animation: none;
 }
 
 /* เผื่อที่ให้ tabbar ไม่ทับเนื้อหาบรรทัดสุดท้าย */
 #shell-view .app-pane {
-  padding-bottom: 22px;
+  padding-bottom: 26px;
 }
 
 /* ---- Tabbar ---- */
 #tabbar {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  height: calc(58px + env(safe-area-inset-bottom, 0px));
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: var(--surface-glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: saturate(1.6) blur(22px);
+  -webkit-backdrop-filter: saturate(1.6) blur(22px);
   border-top: 1px solid var(--border);
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
   --tb-muted: var(--muted);
   --tb-on: var(--accent);
 }
 
 /* แถบล่างเปลี่ยนโทนตามแอปที่เปิดอยู่ — ให้รู้สึกเป็นแอปเดียวกัน ไม่ใช่ 4 แอปเย็บติดกัน */
 #shell[data-tab="health"] #tabbar {
-  background: rgba(12, 16, 20, 0.92);
+  background: rgba(10, 14, 18, 0.9);
   border-top-color: rgba(255, 255, 255, 0.08);
   --tb-muted: #6f7883;
   --tb-on: #2fd287;
 }
 
 #shell[data-tab="money"] #tabbar {
-  background: rgba(15, 18, 14, 0.92);
+  background: rgba(13, 16, 12, 0.9);
   border-top-color: rgba(255, 255, 255, 0.08);
   --tb-muted: #767f6c;
   --tb-on: #cdf463;
 }
 
 #shell[data-tab="weather"] #tabbar {
-  background: rgba(250, 244, 228, 0.94);
-  border-top-color: #e8dfc8;
-  --tb-muted: #a2977e;
+  background: rgba(250, 245, 233, 0.92);
+  border-top-color: #e7ddc7;
+  --tb-muted: #9c9078;
   --tb-on: #b4552d;
 }
 
 .tab {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   border: 0;
   background: none;
   cursor: pointer;
   color: var(--tb-muted);
   -webkit-tap-highlight-color: transparent;
+  transition: color var(--dur) var(--ease);
+}
+
+/* ขีดบอกแท็บที่เลือก — เล็ก คม ไม่ต้องมีพื้นหลังทึบ */
+.tab::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 20px;
+  height: 2px;
+  border-radius: 0 0 3px 3px;
+  background: var(--tb-on);
+  transform: scaleX(0);
+  transition: transform var(--dur) var(--ease);
+}
+
+.tab.on::before {
+  transform: scaleX(1);
 }
 
 .tab svg {
   width: 23px;
   height: 23px;
-  transition: transform 0.15s ease;
+  transition: transform var(--dur) var(--ease);
 }
 
 .tab span {
@@ -118,11 +150,11 @@ body.mode-app {
 }
 
 .tab.on svg {
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.06);
 }
 
 .tab:active svg {
-  transform: scale(0.9);
+  transform: scale(0.88);
 }
 
 /* ---- หน้าซ้อนใน More (Notes / To-do / Calculator) ---- */
@@ -132,19 +164,21 @@ body.mode-app {
   gap: 6px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   position: sticky;
   top: 0;
   z-index: 5;
 }
 
 .sub-back {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 10px;
+  border-radius: 11px;
   background: transparent;
   color: var(--text);
   cursor: pointer;
@@ -157,6 +191,7 @@ body.mode-app {
 
 .sub-back:active {
   background: var(--accent-tint);
+  transform: scale(0.94);
 }
 
 .sub-title {
@@ -167,33 +202,34 @@ body.mode-app {
 
 /* ---- More ---- */
 .more-view {
-  padding: 18px 16px 26px;
+  padding: 20px 16px 28px;
   gap: 0;
 }
 
 .more-h {
   font-family: var(--font-head);
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 14px;
+  letter-spacing: -0.025em;
+  margin-bottom: 6px;
 }
 
 .more-sec {
   font-family: var(--font-head);
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
-  margin: 16px 2px 8px;
+  margin: 20px 2px 9px;
 }
 
 .more-list {
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--r-lg);
   background: var(--surface);
   overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 18, 20, 0.04), 0 8px 24px -14px rgba(15, 18, 20, 0.18);
 }
 
 .more-row {
@@ -209,12 +245,14 @@ body.mode-app {
   text-align: left;
   cursor: pointer;
   font: inherit;
+  transition: background var(--dur) var(--ease);
 }
 
 .more-row:last-child {
   border-bottom: 0;
 }
 
+.more-row:not(.static):hover,
 .more-row:not(.static):active {
   background: var(--accent-tint);
 }
@@ -223,11 +261,16 @@ body.mode-app {
   cursor: default;
 }
 
+/* ไอคอนอยู่ในไทล์ ไม่ใช่ emoji ลอย — จัดระเบียบสายตาให้ทุกแถวเริ่มที่เส้นเดียวกัน */
 .mr-ico {
-  font-size: 21px;
-  width: 30px;
-  text-align: center;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .mr-txt {
@@ -247,7 +290,7 @@ body.mode-app {
 .mr-txt small {
   font-size: 12px;
   color: var(--muted);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .mr-chev {
@@ -255,6 +298,7 @@ body.mode-app {
   display: grid;
   place-items: center;
   flex-shrink: 0;
+  opacity: 0.6;
 }
 
 .mr-chev svg {
@@ -263,7 +307,7 @@ body.mode-app {
 }
 
 .more-foot {
-  margin-top: 18px;
+  margin-top: 22px;
   font-size: 11.5px;
   line-height: 1.6;
   color: var(--muted);
@@ -283,6 +327,7 @@ body.mode-app {
   font-weight: 600;
   cursor: pointer;
   pointer-events: auto;
+  transition: all var(--dur) var(--ease);
 }
 
 .dw-mode:hover {

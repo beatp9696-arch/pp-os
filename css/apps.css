@@ -1,67 +1,142 @@
-/* ---- shared app UI ---- */
+/* ============================================================
+   DESIGN SYSTEM
+   ทุกแอปใช้ component ชุดเดียวกัน (.card / .page-head / .chip / .seg / .list)
+   สิ่งที่ต่างกันคือ "จานสี" ที่ประกาศไว้ที่ราก .app-<id> เท่านั้น
+   → โครงเหมือนกันหมด = อ่านง่าย, สีต่างกัน = ยังมีบุคลิกของตัวเอง
+   ============================================================ */
+
 .app-pane {
+  /* จานสีดีฟอลต์ = ธีมของ OS (Me, More, Notes, To-do, Calculator ใช้ชุดนี้) */
+  --canvas: var(--bg);
+  --card: var(--surface);
+  --card-2: color-mix(in srgb, var(--text) 4%, transparent);
+  --line: var(--border);
+  --ink: var(--text);
+  --dim: var(--muted);
+  --a: var(--accent);
+  --a-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+  --on-a: var(--on-accent);
+  --neg: #e5484d;
+  --elev: 0 1px 2px rgba(15, 18, 20, 0.04), 0 8px 24px -12px rgba(15, 18, 20, 0.18);
+
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 14px 16px;
-  font-size: 14px;
+  gap: 14px;
+  padding: 18px 16px 24px;
   min-height: 100%;
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 14px;
 }
 
-.app-pane h3 {
-  font-family: var(--font-head);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--muted);
-  letter-spacing: 0.03em;
-  margin-top: 4px;
-}
-
-.app-pane input,
-.app-pane select {
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  border-radius: 10px;
-  padding: 8px 10px;
-  font: inherit;
-  outline: none;
-  min-width: 0;
-}
-
-.app-pane input:focus,
-.app-pane select:focus {
-  border-color: var(--accent);
-}
-
-.app-pane .row {
+/* ---- หัวหน้าเพจ: eyebrow / title / sub + ปุ่มมุมขวา ---- */
+.page-head {
   display: flex;
-  gap: 8px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--a);
+}
+
+.page-title {
+  font-family: var(--font-head);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  margin-top: 3px;
+}
+
+.page-sub {
+  font-size: 12.5px;
+  color: var(--dim);
+  margin-top: 2px;
+}
+
+.head-actions {
+  display: flex;
+  gap: 7px;
+  flex-shrink: 0;
+  padding-top: 3px;
+}
+
+/* ---- ปุ่ม ---- */
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 15px;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.icon-btn:hover {
+  border-color: var(--a);
+  background: var(--a-soft);
+}
+
+.icon-btn:active {
+  transform: scale(0.94);
 }
 
 .btn {
-  border: 1px solid var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
-  border-radius: 10px;
-  padding: 8px 14px;
+  border: 1px solid var(--a);
+  background: var(--a);
+  color: var(--on-a);
+  border-radius: 12px;
+  padding: 9px 15px;
   font-family: var(--font-head);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
+  transition: filter var(--dur) var(--ease), transform 0.1s var(--ease);
 }
 
 .btn:hover {
-  background: var(--accent-strong);
-  border-color: var(--accent-strong);
+  filter: brightness(1.08);
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.btn-soft {
+  border: 1px solid color-mix(in srgb, var(--a) 35%, transparent);
+  background: var(--a-soft);
+  color: var(--a);
+  border-radius: 11px;
+  padding: 8px 12px;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 12.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--dur) var(--ease);
+}
+
+.btn-soft:hover {
+  background: color-mix(in srgb, var(--a) 22%, transparent);
 }
 
 .btn-ghost {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  border-radius: 10px;
-  padding: 6px 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 11px;
+  padding: 7px 11px;
   font-family: var(--font-head);
   font-weight: 600;
   font-size: 12.5px;
@@ -69,498 +144,482 @@
 }
 
 .btn-ghost:hover {
-  background: var(--accent-tint);
+  border-color: var(--a);
+  color: var(--a);
 }
 
-.muted {
-  color: var(--muted);
-}
-
-/* ============================================================
-   Me — แดชบอร์ดชีวิตวันนี้ (หน้าแรกของโหมดแอป)
-   ธีมตาม OS (Moatrices) แต่ละการ์ดกดทะลุไปแท็บที่ลึกกว่าได้
-   ============================================================ */
-.app-me {
-  padding: 20px 16px 24px;
-  gap: 14px;
-}
-
-.me-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.me-head > div:first-child {
-  flex: 1;
-  min-width: 0;
-}
-
-.me-head .greet {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.me-name,
-.me-name-input {
-  display: block;
-  border: 0;
-  background: none;
-  padding: 0;
-  font-family: var(--font-head);
-  font-size: 27px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--text);
-  cursor: pointer;
-  text-align: left;
-  line-height: 1.25;
-}
-
-.me-name-input {
-  cursor: text;
-  border-bottom: 2px solid var(--accent);
-  border-radius: 0;
-  width: 100%;
+/* ---- ฟอร์ม ---- */
+.app-pane input,
+.app-pane select,
+.app-pane textarea {
+  border: 1px solid var(--line);
+  background: var(--card-2);
+  color: var(--ink);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font: inherit;
   outline: none;
+  min-width: 0;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease);
 }
 
-.me-date {
-  font-size: 12.5px;
-  color: var(--muted);
-  margin-top: 2px;
+.app-pane input::placeholder {
+  color: var(--dim);
 }
 
-.me-av {
-  width: 46px;
-  height: 46px;
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  border-radius: 15px;
-  background: var(--accent);
-  color: var(--on-accent);
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 16px;
-  text-transform: uppercase;
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 30%, transparent);
+.app-pane input:focus,
+.app-pane select:focus {
+  border-color: var(--a);
+  background: var(--card);
 }
 
-.me-card {
+.app-pane .row {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---- การ์ด: ทรงเดียวทั้งแอป ---- */
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--card);
+  padding: 15px 16px;
+  box-shadow: var(--elev);
+}
+
+button.card,
+.card.tappable {
   display: block;
   width: 100%;
   text-align: left;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: var(--surface);
-  padding: 14px 16px;
-  color: var(--text);
+  color: inherit;
   font: inherit;
   cursor: pointer;
-  box-shadow: var(--shadow-md);
+  transition: transform 0.12s var(--ease), border-color var(--dur) var(--ease);
 }
 
-button.me-card:active {
+button.card:active {
   transform: scale(0.985);
 }
 
-.mc-top {
+button.card:hover {
+  border-color: color-mix(in srgb, var(--a) 40%, var(--line));
+}
+
+.card-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
+  margin-bottom: 2px;
 }
 
-.mc-title {
+.card-title {
   font-family: var(--font-head);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.mc-more {
-  font-size: 11.5px;
-  color: var(--muted);
-  font-family: var(--font-mono);
-}
-
-/* วงแหวนย่อ 3 วงในการ์ดสุขภาพ — ภาษาเดียวกับหน้า Health */
-.minis {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  margin: 12px 0 4px;
-}
-
-.mini {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
-
-.mini .dial {
-  position: relative;
-  width: 52px;
-  height: 52px;
-}
-
-.mini svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.mini .track {
-  fill: none;
-  stroke: color-mix(in srgb, var(--text) 10%, transparent);
-  stroke-width: 5;
-}
-
-.mini .val {
-  fill: none;
-  stroke-width: 5;
-  stroke-linecap: round;
-  transition: stroke-dasharray 0.45s ease;
-}
-
-.mini.sleep .val {
-  stroke: #6ea8fe;
-}
-
-.mini.water .val {
-  stroke: #2fd287;
-}
-
-.mini.ex .val {
-  stroke: #38d6e3;
-}
-
-.mini.steps .val {
-  stroke: #f0b429;
-}
-
-.mini .c {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-mono);
-  font-size: 13px;
-}
-
-.mini .l {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.streak {
-  font-size: 12.5px;
-  color: var(--muted);
-  border-top: 1px solid var(--border);
-  padding-top: 9px;
-  margin-top: 8px;
-}
-
-.me-duo {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.me-duo .me-card {
-  padding: 13px 14px;
-}
-
-.wx-line {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin: 6px 0 1px;
-}
-
-.wx-line .e {
-  font-size: 25px;
-  line-height: 1;
-}
-
-.wx-line .t {
-  font-family: var(--font-head);
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.fin-v {
-  font-family: var(--font-head);
-  font-size: 23px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 8px 0 1px;
-  font-variant-numeric: tabular-nums;
-}
-
-.fin-v.neg {
-  color: #e5484d;
-}
-
-.fin-sub {
-  font-size: 11.5px;
-  color: var(--muted);
-  line-height: 1.4;
-}
-
-.me-todo-add {
-  display: flex;
-  gap: 8px;
-  margin: 11px 0 9px;
-}
-
-.me-todo-add input {
-  flex: 1;
-}
-
-.app-me .me-todo-add .btn {
-  padding: 8px 15px;
-  font-size: 15px;
-}
-
-.me-todo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  border-top: 1px solid var(--border);
   font-size: 13.5px;
-  cursor: pointer;
-}
-
-.me-todo input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
-  flex-shrink: 0;
-}
-
-.me-todo span {
-  flex: 1;
-  line-height: 1.4;
-}
-
-/* ---- Notes ---- */
-.app-notes {
-  display: flex;
-}
-
-.app-notes textarea {
-  flex: 1;
-  resize: none;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: var(--text);
-  padding: 14px 16px;
-  font: inherit;
-  line-height: 1.65;
-}
-
-.app-notes textarea::placeholder {
-  color: var(--muted);
-}
-
-/* ---- Calculator ---- */
-.app-calc {
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-  gap: 10px;
-}
-
-.calc-display {
-  flex: 0 0 64px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  font-family: var(--font-mono);
-  font-size: 32px;
-  font-weight: 500;
-  padding: 6px 10px;
-  overflow: hidden;
-  font-variant-numeric: tabular-nums;
-}
-
-.calc-keys {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.calc-key {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--key);
-  font-family: var(--font-mono);
-  font-size: 17px;
-  cursor: pointer;
-}
-
-.calc-key:hover {
-  background: var(--accent-tint);
-}
-
-.calc-key:active {
-  transform: scale(0.96);
-}
-
-.calc-key.op {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
   font-weight: 700;
 }
 
-.calc-key.op:hover {
-  background: var(--accent-strong);
+.card-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--dim);
 }
 
-.calc-key.zero {
-  grid-column: span 2;
+/* หัวข้อคั่นส่วน */
+.sec {
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin: 6px 2px -4px;
 }
 
-/* ---- To-do ---- */
-.todo-list {
-  flex: 1;
-  overflow: auto;
+/* ---- ชิป ---- */
+.chips {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 11.5px;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.chip b {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.chip.on {
+  border-color: color-mix(in srgb, var(--a) 45%, transparent);
+  background: var(--a-soft);
+  color: var(--a);
+}
+
+.chip.on b {
+  color: var(--a);
+}
+
+/* ---- segmented control (ใช้เป็น tabs, ตัวเลือกอารมณ์, สลับเดือน) ---- */
+.seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card-2);
+}
+
+.seg button {
+  border: 0;
+  background: transparent;
+  color: var(--dim);
+  border-radius: 9px;
+  padding: 7px 13px;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+
+.seg button.on {
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+/* ---- list: แถวคั่นด้วยเส้นผม ไม่ใช่กล่องซ้อนกล่อง ---- */
+.list {
   display: flex;
   flex-direction: column;
 }
 
-.todo-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 2px;
-  border-bottom: 1px solid var(--border);
+.list > * + * {
+  border-top: 1px solid var(--line);
 }
 
-.todo-item input[type="checkbox"] {
-  width: 17px;
-  height: 17px;
-  accent-color: var(--accent);
-  flex-shrink: 0;
+.muted {
+  color: var(--dim);
 }
 
-.todo-item .txt {
-  flex: 1;
-  line-height: 1.4;
-}
-
-.todo-item.done .txt {
-  color: var(--muted);
-  text-decoration: line-through;
-}
-
-.todo-foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.empty {
   font-size: 12.5px;
-  color: var(--muted);
+  color: var(--dim);
+  padding: 10px 0;
 }
 
 .x-btn {
   border: 0;
   background: transparent;
-  color: var(--muted);
+  color: var(--dim);
   cursor: pointer;
-  border-radius: 7px;
-  width: 24px;
-  height: 24px;
-  font-size: 12px;
+  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  font-size: 11px;
   flex-shrink: 0;
+  opacity: 0.65;
+  transition: all var(--dur) var(--ease);
 }
 
 .x-btn:hover {
-  background: #e5484d;
+  background: var(--neg);
   color: #fff;
+  opacity: 1;
+}
+
+/* ---- วงแหวน (ใช้ทั้ง Health และ Me) ---- */
+.ring-track {
+  fill: none;
+  stroke: color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.ring-val {
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke-dasharray 900ms var(--ease);
 }
 
 /* ============================================================
-   Health — WHOOP-inspired: จอดำ วงแหวน glow เขียว ตัวเลข mono
-   identity ของแอปนี้คงที่ ไม่ตามธีมสว่าง/มืดของ OS
+   Health — WHOOP: จอลึก วงแหวนเรืองแสง ตัวเลข mono
    ============================================================ */
 .app-health {
-  --h-card: rgba(255, 255, 255, 0.045);
-  --h-border: rgba(255, 255, 255, 0.09);
-  --h-text: #e6edf3;
-  --h-muted: #8b949e;
-  --h-green: #2fd287;
-  --h-blue: #6ea8fe;
-  --h-cyan: #38d6e3;
+  --canvas: #0a0e12;
+  --card: #12181e;
+  --card-2: rgba(255, 255, 255, 0.04);
+  --line: rgba(255, 255, 255, 0.08);
+  --ink: #e9eef3;
+  --dim: #8b969f;
+  --a: #2fd287;
+  --a-soft: rgba(47, 210, 135, 0.12);
+  --on-a: #07120d;
+  --sleep: #6ea8fe;
+  --strain: #38d6e3;
+  --steps: #f0b429;
+  --elev: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -18px rgba(0, 0, 0, 0.9);
   background:
-    radial-gradient(560px 300px at 50% -8%, rgba(47, 210, 135, 0.16), transparent 70%),
-    #0c1014;
-  color: var(--h-text);
-  gap: 13px;
+    radial-gradient(620px 320px at 50% -10%, rgba(47, 210, 135, 0.14), transparent 70%),
+    var(--canvas);
+  position: relative;
 }
 
-.app-health h3 {
-  color: var(--h-muted);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-size: 11px;
+.rings {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
 }
 
-.h-top {
+.ring {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ring .dial {
+  position: relative;
+  width: 86px;
+  height: 86px;
+}
+
+.ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring .ring-track {
+  stroke-width: 6;
+}
+
+.ring .ring-val {
+  stroke-width: 6;
+}
+
+.ring[data-c="green"] .ring-val {
+  stroke: var(--a);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--a) 45%, transparent));
+}
+
+.ring[data-c="blue"] .ring-val {
+  stroke: var(--sleep);
+  filter: drop-shadow(0 0 4px rgba(110, 168, 254, 0.45));
+}
+
+.ring[data-c="cyan"] .ring-val {
+  stroke: var(--strain);
+  filter: drop-shadow(0 0 4px rgba(56, 214, 227, 0.45));
+}
+
+.ring .pct {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-head);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.ring .name {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  color: var(--dim);
+}
+
+.ring .sub {
+  font-size: 11px;
+  color: var(--dim);
+  margin-top: -4px;
+}
+
+.insight .t {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--a);
+  margin-bottom: 5px;
+}
+
+.insight.warn .t {
+  color: #f0b429;
+}
+
+.insight .d {
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+/* แถวบันทึกค่า — อยู่ในการ์ดเดียว คั่นด้วยเส้นผม (เดิมเป็น 6 กล่องลอย = รกตา) */
+.metric-row {
+  display: flex;
   align-items: center;
   gap: 10px;
+  padding: 11px 0;
 }
 
-.h-brand {
+.metric-row .ico {
+  width: 24px;
+  font-size: 17px;
+  text-align: center;
+}
+
+.metric-row .lbl {
+  flex: 1;
+  font-size: 13.5px;
+}
+
+.metric-row .val {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  min-width: 58px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.step-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--card-2);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+
+.step-btn:hover {
+  background: var(--a-soft);
+  border-color: var(--a);
+  color: var(--a);
+}
+
+.step-btn:active {
+  transform: scale(0.9);
+}
+
+.weight-input {
+  width: 92px;
+  text-align: right;
+  font-family: var(--font-mono);
+  padding: 7px 10px !important;
+}
+
+.mood-seg {
+  display: flex;
+  gap: 2px;
+}
+
+.mood-seg button {
+  font-size: 19px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 4px 6px;
+  cursor: pointer;
+  filter: grayscale(0.75) opacity(0.6);
+  transition: all var(--dur) var(--ease);
+}
+
+.mood-seg button:hover {
+  filter: none;
+}
+
+.mood-seg button.sel {
+  background: var(--a-soft);
+  border-color: color-mix(in srgb, var(--a) 45%, transparent);
+  filter: none;
+  transform: scale(1.08);
+}
+
+/* กราฟแท่ง 7 วัน */
+.trend + .trend {
+  margin-top: 12px;
+}
+
+.trend-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12.5px;
+  margin-bottom: 6px;
+}
+
+.trend-head .cap {
+  color: var(--dim);
   font-family: var(--font-mono);
   font-size: 11px;
-  letter-spacing: 0.22em;
-  color: var(--h-green);
+  font-variant-numeric: tabular-nums;
 }
 
-.h-date {
-  font-size: 12.5px;
-  color: var(--h-muted);
-  margin-top: 2px;
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 42px;
 }
 
-.h-import {
-  flex-shrink: 0;
-  border: 1px solid rgba(47, 210, 135, 0.35);
-  background: rgba(47, 210, 135, 0.1);
-  color: var(--h-green);
-  border-radius: 10px;
-  padding: 7px 11px;
-  font-family: var(--font-head);
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
+.bars .bar {
+  flex: 1;
+  min-height: 3px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--bar, var(--a)) 28%, transparent);
+  transition: height 600ms var(--ease);
 }
 
-.h-import:active {
-  background: rgba(47, 210, 135, 0.2);
+.bars .bar.today {
+  background: var(--bar, var(--a));
+}
+
+.trend[data-m="steps"] {
+  --bar: var(--steps);
+}
+
+.trend[data-m="water"] {
+  --bar: var(--a);
+}
+
+.trend[data-m="ex"] {
+  --bar: var(--strain);
+}
+
+.trend[data-m="sleep"] {
+  --bar: var(--sleep);
 }
 
 .h-src {
   font-size: 11.5px;
-  color: var(--h-muted);
-  border-top: 1px solid var(--h-border);
-  padding-top: 10px;
-  margin-top: 4px;
-  line-height: 1.5;
+  color: var(--dim);
+  line-height: 1.6;
+  text-align: center;
+  padding-top: 2px;
 }
 
 /* ---- ชีตนำเข้า Apple Health ----
-   ต้องเป็น fixed ไม่ใช่ absolute: pane ของ Health สูงกว่าจอ (เลื่อนได้)
-   absolute inset:0 จะกางเต็ม "ความสูงของเนื้อหา" แล้วการ์ดไปโผล่ท้ายสุดที่มองไม่เห็น */
+   ต้อง fixed ไม่ใช่ absolute: pane สูงกว่าจอ (เลื่อนได้) — absolute inset:0
+   จะกางตาม "ความสูงของเนื้อหา" แล้วการ์ดไปโผล่ท้ายสุดที่มองไม่เห็น */
 .hk-sheet {
   position: fixed;
   inset: 0;
@@ -568,16 +627,22 @@ button.me-card:active {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
   padding: 16px;
+  background: rgba(4, 8, 10, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fade-in 0.2s var(--ease);
 }
 
-/* บนมือถือชีตเด้งจากขอบล่างแบบ native */
 body.mode-app .hk-sheet {
   align-items: flex-end;
   padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .hk-card {
@@ -585,19 +650,20 @@ body.mode-app .hk-sheet {
   max-width: 460px;
   max-height: 88%;
   overflow-y: auto;
-  border: 1px solid var(--h-border);
-  border-radius: 18px;
-  background: #11171c;
-  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-xl);
+  background: #12181e;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 11px;
-  animation: hk-up 0.22s ease-out;
+  gap: 12px;
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.8);
+  animation: hk-up 0.3s var(--ease);
 }
 
 @keyframes hk-up {
   from {
-    transform: translateY(18px);
+    transform: translateY(24px);
     opacity: 0;
   }
 }
@@ -608,23 +674,28 @@ body.mode-app .hk-sheet {
   justify-content: space-between;
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .hk-x {
   border: 0;
   background: transparent;
-  color: var(--h-muted);
+  color: var(--dim);
   font-size: 13px;
   cursor: pointer;
-  padding: 4px 6px;
+  padding: 6px;
   border-radius: 8px;
+}
+
+.hk-x:hover {
+  background: var(--card-2);
+  color: var(--ink);
 }
 
 .hk-p {
   font-size: 12.5px;
-  line-height: 1.6;
-  color: var(--h-muted);
+  line-height: 1.65;
+  color: var(--dim);
 }
 
 .hk-drop {
@@ -632,23 +703,28 @@ body.mode-app .hk-sheet {
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  padding: 16px;
-  border: 1.5px dashed rgba(47, 210, 135, 0.45);
-  border-radius: 14px;
-  background: rgba(47, 210, 135, 0.06);
+  padding: 20px;
+  border: 1.5px dashed color-mix(in srgb, var(--a) 45%, transparent);
+  border-radius: var(--r-lg);
+  background: var(--a-soft);
   cursor: pointer;
   text-align: center;
+  transition: background var(--dur) var(--ease);
+}
+
+.hk-drop:hover {
+  background: color-mix(in srgb, var(--a) 18%, transparent);
 }
 
 .hk-drop b {
   font-family: var(--font-head);
-  font-size: 14.5px;
-  color: var(--h-green);
+  font-size: 15px;
+  color: var(--a);
 }
 
 .hk-drop small {
   font-size: 11.5px;
-  color: var(--h-muted);
+  color: var(--dim);
 }
 
 .hk-status:empty {
@@ -657,17 +733,17 @@ body.mode-app .hk-sheet {
 
 .hk-status {
   font-size: 12.5px;
-  line-height: 1.6;
+  line-height: 1.65;
   white-space: pre-line;
-  border-radius: 10px;
-  padding: 9px 11px;
-  background: var(--h-card);
-  border: 1px solid var(--h-border);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  background: var(--card-2);
+  border: 1px solid var(--line);
 }
 
 .hk-status.ok {
-  border-color: rgba(47, 210, 135, 0.45);
-  color: var(--h-green);
+  border-color: color-mix(in srgb, var(--a) 45%, transparent);
+  color: var(--a);
 }
 
 .hk-status.err {
@@ -680,392 +756,84 @@ body.mode-app .hk-sheet {
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  padding: 9px 0;
-  border-top: 1px solid var(--h-border);
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+
+.hk-how summary::-webkit-details-marker {
+  display: none;
+}
+
+.hk-how summary::before {
+  content: "＋ ";
+  color: var(--a);
+}
+
+.hk-how[open] summary::before {
+  content: "－ ";
 }
 
 .hk-how ol {
   padding-left: 18px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
   font-size: 12.5px;
-  line-height: 1.6;
-  color: var(--h-muted);
-  margin-bottom: 8px;
+  line-height: 1.65;
+  color: var(--dim);
+  margin-bottom: 10px;
 }
 
 .hk-how li b {
-  color: var(--h-text);
+  color: var(--ink);
 }
 
 .hk-how p {
   font-size: 12px;
-  line-height: 1.6;
-  color: var(--h-muted);
-  margin-bottom: 6px;
+  line-height: 1.65;
+  color: var(--dim);
+  margin-bottom: 8px;
 }
 
 .hk-how code {
   font-family: var(--font-mono);
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--card-2);
   border-radius: 5px;
-  padding: 1px 5px;
-  color: var(--h-text);
+  padding: 2px 5px;
+  color: var(--ink);
   word-break: break-all;
 }
 
-.rings {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  padding: 4px 0 2px;
-}
-
-.ring {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-}
-
-.ring .dial {
-  position: relative;
-  width: 84px;
-  height: 84px;
-}
-
-.ring svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.ring .track {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.08);
-  stroke-width: 7;
-}
-
-.ring .val {
-  fill: none;
-  stroke-width: 7;
-  stroke-linecap: round;
-  transition: stroke-dasharray 0.45s ease;
-}
-
-.ring[data-c="blue"] .val {
-  stroke: var(--h-blue);
-  filter: drop-shadow(0 0 5px rgba(110, 168, 254, 0.55));
-}
-
-.ring[data-c="green"] .val {
-  stroke: var(--h-green);
-  filter: drop-shadow(0 0 5px rgba(47, 210, 135, 0.55));
-}
-
-.ring[data-c="cyan"] .val {
-  stroke: var(--h-cyan);
-  filter: drop-shadow(0 0 5px rgba(56, 214, 227, 0.55));
-}
-
-.ring .pct {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-mono);
-  font-size: 16px;
-  font-variant-numeric: tabular-nums;
-}
-
-.ring .name {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.18em;
-  color: var(--h-muted);
-}
-
-.ring .sub {
-  font-size: 11.5px;
-  color: var(--h-muted);
-  margin-top: -3px;
-}
-
-.h-insight {
-  border: 1px solid var(--h-border);
-  background: var(--h-card);
-  border-radius: 14px;
-  padding: 12px 14px;
-}
-
-.h-insight .t {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  color: var(--h-green);
-  margin-bottom: 4px;
-}
-
-.h-insight.warn .t {
-  color: #f0b429;
-}
-
-.h-insight .d {
-  font-size: 13.5px;
-  line-height: 1.55;
-}
-
-.h-chips {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.h-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--h-border);
-  background: var(--h-card);
-  border-radius: 10px;
-  padding: 7px 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  color: var(--h-muted);
-}
-
-.h-chip b {
-  color: var(--h-text);
-  font-weight: 500;
-}
-
-.h-chip.ok {
-  border-color: rgba(47, 210, 135, 0.45);
-  color: var(--h-green);
-}
-
-.h-chip.ok b {
-  color: var(--h-green);
-}
-
-.app-health .step-row {
-  border: 1px solid var(--h-border);
-  background: var(--h-card);
-  border-radius: 12px;
-  padding: 9px 12px;
-}
-
-.app-health .step-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: var(--h-border);
-  color: var(--h-text);
-  border-radius: 50%;
-}
-
-.app-health .step-btn:hover {
-  background: rgba(47, 210, 135, 0.16);
-}
-
-.app-health input {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: var(--h-border);
-  color: var(--h-text);
-}
-
-.app-health input:focus {
-  border-color: var(--h-green);
-}
-
-.app-health .mood button.sel {
-  background: rgba(47, 210, 135, 0.16);
-  border-color: var(--h-green);
-}
-
-.app-health .bars {
-  border-bottom-color: var(--h-border);
-}
-
-.app-health .trend-head .cap {
-  color: var(--h-muted);
-}
-
-.app-health .trend[data-m="steps"] .bar {
-  background: rgba(240, 180, 41, 0.3);
-}
-
-.app-health .trend[data-m="steps"] .bar.today {
-  background: #f0b429;
-}
-
-.app-health .trend[data-m="water"] .bar {
-  background: rgba(47, 210, 135, 0.3);
-}
-
-.app-health .trend[data-m="water"] .bar.today {
-  background: var(--h-green);
-}
-
-.app-health .trend[data-m="ex"] .bar {
-  background: rgba(56, 214, 227, 0.3);
-}
-
-.app-health .trend[data-m="ex"] .bar.today {
-  background: var(--h-cyan);
-}
-
-.app-health .trend[data-m="sleep"] .bar {
-  background: rgba(110, 168, 254, 0.3);
-}
-
-.app-health .trend[data-m="sleep"] .bar.today {
-  background: var(--h-blue);
-}
-
-/* Health: แถวบันทึก (โครงเดิม สีตามธีมแอป) */
-.step-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.step-row .ico {
-  font-size: 18px;
-}
-
-.step-row .lbl {
-  flex: 1;
-}
-
-.step-row .val {
-  font-family: var(--font-mono);
-  min-width: 52px;
-  text-align: center;
-}
-
-.step-btn {
-  width: 30px;
-  height: 30px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: var(--surface);
-  cursor: pointer;
-  font-size: 16px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.weight-input {
-  width: 90px;
-  text-align: right;
-  font-family: var(--font-mono);
-}
-
-.mood {
-  display: flex;
-  gap: 4px;
-}
-
-.mood button {
-  font-size: 21px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  padding: 3px 7px;
-  cursor: pointer;
-}
-
-.trend {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.trend-head {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12.5px;
-}
-
-.trend-head .cap {
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 11.5px;
-}
-
-.bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 3px;
-  height: 40px;
-  border-bottom: 1px solid var(--border);
-}
-
-.bars .bar {
-  flex: 1;
-  min-height: 2px;
-  border-radius: 3px 3px 0 0;
-}
-
 /* ============================================================
-   Weather — Acme-inspired: กระดาษครีม หัวเรื่อง serif
-   แท่ง range อุณหภูมิบนสเกลร่วมทั้งสัปดาห์
+   Weather — Acme: กระดาษครีม หัวเรื่อง serif
    ============================================================ */
 .app-weather {
-  --w-paper: #faf4e4;
-  --w-ink: #33291c;
-  --w-muted: #94886f;
-  --w-line: #e8dfc8;
-  --w-rust: #b4552d;
-  --w-rain: #4a7dbb;
+  --canvas: #faf5e9;
+  --card: #fffdf7;
+  --card-2: rgba(51, 41, 28, 0.04);
+  --line: #e7ddc7;
+  --ink: #2f261a;
+  --dim: #8d8168;
+  --a: #b4552d;
+  --a-soft: rgba(180, 85, 45, 0.09);
+  --on-a: #fff;
+  --rain: #3f7bbf;
+  --elev: 0 1px 2px rgba(80, 62, 35, 0.05), 0 10px 26px -16px rgba(80, 62, 35, 0.3);
   background:
-    radial-gradient(700px 420px at 85% -10%, rgba(180, 85, 45, 0.06), transparent 65%),
-    var(--w-paper);
-  color: var(--w-ink);
-  gap: 10px;
+    radial-gradient(700px 400px at 88% -12%, rgba(180, 85, 45, 0.07), transparent 66%),
+    var(--canvas);
 }
 
-.wx-serif {
+.serif {
   font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
   font-weight: 700;
-  font-size: 21px;
-  letter-spacing: -0.01em;
-  margin-top: 6px;
+  letter-spacing: -0.015em;
 }
 
-.wx-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.wx-head .loc {
-  flex: 1;
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--w-rust);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.app-weather .btn-ghost {
-  background: transparent;
-  border-color: var(--w-line);
-  color: var(--w-ink);
-}
-
-.app-weather .btn-ghost:hover {
-  background: rgba(180, 85, 45, 0.08);
-}
-
-.wx-main {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.app-weather .page-title {
+  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
 }
 
 .wx-now {
@@ -1075,57 +843,42 @@ body.mode-app .hk-sheet {
 }
 
 .wx-now .emoji {
-  font-size: 54px;
+  font-size: 50px;
   line-height: 1;
 }
 
 .wx-now .t {
-  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
-  font-size: 52px;
-  font-weight: 700;
+  font-size: 54px;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .wx-now .desc {
   font-size: 14px;
-  margin-top: 3px;
+  margin-top: 5px;
 }
 
-.wx-meta {
-  font-size: 12px;
-  color: var(--w-muted);
-  margin-top: 4px;
+.app-weather .chips {
+  margin-top: 12px;
 }
 
 .wx-chart {
-  border: 1px solid var(--w-line);
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
-  padding: 8px 6px 4px;
+  margin: 4px -4px -2px;
 }
 
 .wx-chart svg {
   width: 100%;
   display: block;
-}
-
-.wx-days {
-  display: flex;
-  flex-direction: column;
+  overflow: visible;
 }
 
 .wx-day {
   display: grid;
-  grid-template-columns: 42px 24px 44px 1fr;
+  grid-template-columns: 40px 24px 46px 1fr;
   align-items: center;
   gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--w-line);
+  padding: 10px 0;
   font-size: 13px;
-}
-
-.wx-day:last-child {
-  border-bottom: 0;
 }
 
 .wx-day .d {
@@ -1136,22 +889,24 @@ body.mode-app .hk-sheet {
 .wx-day .rain {
   font-family: var(--font-mono);
   font-size: 11px;
-  color: var(--w-rain);
+  color: var(--rain);
+  font-variant-numeric: tabular-nums;
 }
 
 .wx-range {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
 }
 
 .wx-range .lo,
 .wx-range .hi {
   font-family: var(--font-mono);
   font-size: 11.5px;
-  color: var(--w-muted);
+  color: var(--dim);
   width: 26px;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .wx-range .lo {
@@ -1160,278 +915,230 @@ body.mode-app .hk-sheet {
 
 .wx-range .track {
   flex: 1;
-  height: 7px;
-  border-radius: 4px;
-  background: var(--w-line);
+  height: 6px;
+  border-radius: 3px;
+  background: var(--card-2);
   position: relative;
 }
 
 .wx-range .pill {
   position: absolute;
-  top: -1.5px;
+  top: -2px;
   height: 10px;
   border-radius: 5px;
-  background: var(--w-ink);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--ink) 55%, transparent), var(--ink));
+  animation: pill-in 700ms var(--ease) both;
+}
+
+@keyframes pill-in {
+  from {
+    transform: scaleX(0.2);
+    opacity: 0;
+  }
 }
 
 .wx-note {
-  font-size: 12px;
-  color: var(--w-muted);
+  font-size: 11.5px;
+  color: var(--dim);
+  text-align: center;
 }
 
 /* ============================================================
-   Money — FinTrack-inspired: จอดำ accent เขียวมะนาว
-   Balance ใหญ่ + การ์ดเก็บเงินพร้อมวงแหวน + tabs กรองรายการ
+   Money — FinTrack: จอลึก accent เขียวมะนาว
    ============================================================ */
 .app-money {
-  --mn-card: #171c16;
-  --mn-border: rgba(255, 255, 255, 0.08);
-  --mn-text: #edf2e6;
-  --mn-muted: #8f9885;
-  --mn-lime: #cdf463;
-  --mn-on-lime: #161b07;
-  --mn-red: #ff8177;
+  --canvas: #0d100c;
+  --card: #171c15;
+  --card-2: rgba(255, 255, 255, 0.045);
+  --line: rgba(255, 255, 255, 0.08);
+  --ink: #edf2e6;
+  --dim: #8b9382;
+  --a: #cdf463;
+  --a-soft: rgba(205, 244, 99, 0.12);
+  --on-a: #161b07;
+  --neg: #ff8177;
+  --elev: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -18px rgba(0, 0, 0, 0.9);
   background:
-    radial-gradient(520px 300px at 88% -6%, rgba(205, 244, 99, 0.1), transparent 65%),
-    #0f120e;
-  color: var(--mn-text);
+    radial-gradient(560px 300px at 85% -8%, rgba(205, 244, 99, 0.1), transparent 66%),
+    var(--canvas);
 }
 
-.app-money h3 {
-  color: var(--mn-muted);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  font-size: 11px;
-}
-
-.m-nav {
+.month-pick {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card-2);
+  padding: 3px;
 }
 
-.m-nav .m {
-  flex: 1;
-  text-align: center;
+.month-pick .m {
   font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--ink);
+  padding: 0 8px;
+  min-width: 76px;
+  text-align: center;
+}
+
+.month-pick button {
+  width: 28px;
+  height: 30px;
+  border: 0;
+  background: transparent;
+  color: var(--dim);
+  border-radius: 9px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.month-pick button:hover {
+  background: var(--card);
+  color: var(--ink);
+}
+
+/* การ์ดฮีโร่ — รวมยอดคงเหลือ + วงแหวนออม + รายรับ/จ่าย ไว้ใบเดียว (เดิมกระจาย 3 กล่อง) */
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.hero .k {
   font-size: 12px;
-  letter-spacing: 0.08em;
-  color: var(--mn-muted);
+  color: var(--dim);
 }
 
-.app-money .btn-ghost {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--mn-border);
-  color: var(--mn-text);
-}
-
-.app-money .btn-ghost:hover {
-  background: rgba(205, 244, 99, 0.14);
-}
-
-.m-balance .k {
-  font-size: 12.5px;
-  color: var(--mn-muted);
-}
-
-.m-balance .v {
+.hero .big {
   font-family: var(--font-head);
+  font-size: 36px;
   font-weight: 700;
-  font-size: 34px;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin-top: 3px;
   font-variant-numeric: tabular-nums;
 }
 
-.m-balance .v.neg {
-  color: var(--mn-red);
+.hero .big.neg {
+  color: var(--neg);
 }
 
-.m-well {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid var(--mn-border);
-  background: var(--mn-card);
-  border-radius: 16px;
-  padding: 12px 14px;
+.hero .note {
+  font-size: 12px;
+  color: var(--dim);
+  margin-top: 4px;
+  line-height: 1.5;
 }
 
-.m-well .txt {
-  flex: 1;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--mn-muted);
-}
-
-.m-well .txt b {
-  display: block;
-  color: var(--mn-text);
-  font-family: var(--font-head);
-  font-size: 14.5px;
-}
-
-.m-well .dial {
+.dial-sm {
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   flex-shrink: 0;
 }
 
-.m-well svg {
+.dial-sm svg {
   width: 100%;
   height: 100%;
   transform: rotate(-90deg);
 }
 
-.m-well .track {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.09);
+.dial-sm .ring-track {
   stroke-width: 6;
 }
 
-.m-well .val {
-  fill: none;
-  stroke: var(--mn-lime);
+.dial-sm .ring-val {
   stroke-width: 6;
-  stroke-linecap: round;
-  filter: drop-shadow(0 0 5px rgba(205, 244, 99, 0.5));
-  transition: stroke-dasharray 0.45s ease;
+  stroke: var(--a);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--a) 45%, transparent));
 }
 
-.m-well .pct {
+.dial-sm.over .ring-val {
+  stroke: var(--neg);
+  filter: none;
+}
+
+.dial-sm .c {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
   font-family: var(--font-mono);
   font-size: 12.5px;
-  color: var(--mn-lime);
+  color: var(--a);
+  font-variant-numeric: tabular-nums;
 }
 
-.m-well.over .val {
-  stroke: var(--mn-red);
-  filter: drop-shadow(0 0 5px rgba(255, 129, 119, 0.45));
+.dial-sm.over .c {
+  color: var(--neg);
 }
 
-.m-well.over .pct {
-  color: var(--mn-red);
-}
-
-.m-duo {
+.hero-split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 13px;
 }
 
-.m-card {
-  border: 1px solid var(--mn-border);
-  background: var(--mn-card);
-  border-radius: 14px;
-  padding: 10px 12px;
-}
-
-.m-card .k {
+.io .k {
   display: flex;
   align-items: center;
   gap: 7px;
   font-size: 11.5px;
-  color: var(--mn-muted);
+  color: var(--dim);
 }
 
-.m-card .k .dot {
+.io .dot {
   width: 20px;
   height: 20px;
   border-radius: 7px;
   display: grid;
   place-items: center;
-  font-size: 11px;
+  font-size: 10px;
 }
 
-.m-card.in .dot {
-  background: rgba(205, 244, 99, 0.15);
-  color: var(--mn-lime);
+.io.in .dot {
+  background: var(--a-soft);
+  color: var(--a);
 }
 
-.m-card.out .dot {
+.io.out .dot {
   background: rgba(255, 129, 119, 0.14);
-  color: var(--mn-red);
+  color: var(--neg);
 }
 
-.m-card .v {
+.io .v {
   font-family: var(--font-mono);
-  font-size: 16.5px;
-  margin-top: 4px;
-}
-
-.app-money input,
-.app-money select {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--mn-border);
-  color: var(--mn-text);
-}
-
-.app-money input:focus,
-.app-money select:focus {
-  border-color: var(--mn-lime);
-}
-
-.app-money input::placeholder {
-  color: var(--mn-muted);
-}
-
-.app-money .btn {
-  background: var(--mn-lime);
-  border-color: var(--mn-lime);
-  color: var(--mn-on-lime);
-  border-radius: 12px;
-  font-weight: 700;
-}
-
-.app-money .btn:hover {
-  background: #daff78;
-  border-color: #daff78;
+  font-size: 16px;
+  margin-top: 5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .money-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.m-tabs {
-  display: flex;
-  gap: 16px;
-  border-bottom: 1px solid var(--mn-border);
-  margin-top: 4px;
-}
-
-.m-tabs button {
-  background: none;
-  border: 0;
-  padding: 6px 2px 9px;
-  margin-bottom: -1px;
-  font-family: var(--font-head);
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--mn-muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-}
-
-.m-tabs button.on {
-  color: var(--mn-lime);
-  border-bottom-color: var(--mn-lime);
+  gap: 9px;
 }
 
 .cat-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 13px;
+  padding: 7px 0;
 }
 
 .cat-row .name {
-  width: 92px;
+  width: 84px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1439,44 +1146,49 @@ body.mode-app .hk-sheet {
 
 .cat-row .track {
   flex: 1;
-  height: 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.08);
+  height: 6px;
+  border-radius: 3px;
+  background: var(--card-2);
   overflow: hidden;
 }
 
 .cat-row .fill {
+  display: block;
   height: 100%;
-  border-radius: 4px;
-  background: var(--mn-lime);
+  border-radius: 3px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--a) 55%, transparent), var(--a));
+  animation: grow 700ms var(--ease) both;
+  transform-origin: left;
+}
+
+@keyframes grow {
+  from {
+    transform: scaleX(0);
+  }
 }
 
 .cat-row .amt {
   font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--mn-muted);
-  min-width: 86px;
+  font-size: 11.5px;
+  color: var(--dim);
+  min-width: 84px;
   text-align: right;
-}
-
-.entries {
-  display: flex;
-  flex-direction: column;
+  font-variant-numeric: tabular-nums;
 }
 
 .entry {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--mn-border);
+  gap: 10px;
+  padding: 11px 0;
   font-size: 13px;
 }
 
 .entry .d {
-  color: var(--mn-muted);
-  font-size: 12px;
-  width: 46px;
+  color: var(--dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  width: 44px;
   flex-shrink: 0;
 }
 
@@ -1490,21 +1202,349 @@ body.mode-app .hk-sheet {
 
 .entry .amt {
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 
 .entry .amt.in {
-  color: var(--mn-lime);
+  color: var(--a);
 }
 
 .entry .amt.out {
-  color: var(--mn-red);
+  color: var(--neg);
 }
 
-.app-money .x-btn {
-  color: var(--mn-muted);
+/* ============================================================
+   Me — แดชบอร์ดวันนี้ (ธีมตาม OS)
+   ============================================================ */
+.app-me {
+  gap: 13px;
 }
 
-.app-money .muted {
-  color: var(--mn-muted);
+.me-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.me-head > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.me-name,
+.me-name-input {
+  display: block;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-family: var(--font-head);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+.me-name:hover {
+  color: var(--a);
+}
+
+.me-name-input {
+  cursor: text;
+  border-bottom: 2px solid var(--a);
+  border-radius: 0;
+  width: 100%;
+  outline: none;
+  padding: 0 0 2px !important;
+}
+
+.me-av {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--a) 85%, #fff), var(--a));
+  color: var(--on-a);
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 16px;
+  text-transform: uppercase;
+  box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--a) 70%, transparent);
+}
+
+.minis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin: 14px 0 2px;
+}
+
+.mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.mini .dial {
+  position: relative;
+  width: 54px;
+  height: 54px;
+}
+
+.mini svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.mini .ring-track {
+  stroke-width: 5;
+}
+
+.mini .ring-val {
+  stroke-width: 5;
+}
+
+.mini.sleep .ring-val {
+  stroke: #6ea8fe;
+}
+
+.mini.water .ring-val {
+  stroke: #2fd287;
+}
+
+.mini.ex .ring-val {
+  stroke: #38d6e3;
+}
+
+.mini.steps .ring-val {
+  stroke: #f0b429;
+}
+
+.mini .c {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mini .l {
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.streak {
+  font-size: 12px;
+  color: var(--dim);
+  border-top: 1px solid var(--line);
+  padding-top: 11px;
+  margin-top: 12px;
+}
+
+.me-duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+}
+
+.wx-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 2px;
+}
+
+.wx-line .e {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.wx-line .t {
+  font-family: var(--font-head);
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.fin-v {
+  font-family: var(--font-head);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 8px 0 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.fin-v.neg {
+  color: var(--neg);
+}
+
+.fin-sub {
+  font-size: 11.5px;
+  color: var(--dim);
+  line-height: 1.45;
+}
+
+.me-todo-add {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+
+.me-todo-add input {
+  flex: 1;
+}
+
+.me-todo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 0;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.me-todo input {
+  width: 19px;
+  height: 19px;
+  accent-color: var(--a);
+  flex-shrink: 0;
+  padding: 0 !important;
+}
+
+.me-todo span {
+  flex: 1;
+  line-height: 1.45;
+}
+
+/* ============================================================
+   Notes / To-do / Calculator
+   ============================================================ */
+.app-notes {
+  display: flex;
+  padding: 0;
+}
+
+.app-notes textarea {
+  flex: 1;
+  resize: none;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0;
+  background: transparent !important;
+  color: var(--text);
+  padding: 18px !important;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+.todo-list {
+  flex: 1;
+}
+
+.todo-list > * + * {
+  border-top: 1px solid var(--line);
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 0;
+}
+
+.todo-item input[type="checkbox"] {
+  width: 19px;
+  height: 19px;
+  accent-color: var(--a);
+  flex-shrink: 0;
+  padding: 0 !important;
+}
+
+.todo-item .txt {
+  flex: 1;
+  line-height: 1.45;
+}
+
+.todo-item.done .txt {
+  color: var(--dim);
+  text-decoration: line-through;
+}
+
+.todo-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12.5px;
+  color: var(--dim);
+  padding-top: 4px;
+}
+
+.app-calc {
+  padding: 14px;
+  gap: 12px;
+}
+
+.calc-display {
+  flex: 0 0 68px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  font-family: var(--font-head);
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  padding: 6px 8px;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-keys {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+}
+
+.calc-key {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--font-head);
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), transform 0.1s var(--ease);
+}
+
+.calc-key:hover {
+  background: var(--a-soft);
+}
+
+.calc-key:active {
+  transform: scale(0.94);
+}
+
+.calc-key.op {
+  background: var(--a);
+  border-color: var(--a);
+  color: var(--on-a);
+  font-weight: 700;
+}
+
+.calc-key.zero {
+  grid-column: span 2;
 }

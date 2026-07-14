@@ -1,11 +1,12 @@
 import { load, save } from "../core/storage.js";
 import { DEFAULT_LOC, describe, fetchForecast } from "./weather.js";
+import { countUp, flush } from "../core/ui.js";
 
 // หน้า Me — แดชบอร์ดชีวิตวันนี้ อ่านข้อมูลจากทุกแอปมารวมในจอเดียว
 // ทุกการ์ดกดแล้วกระโดดไปแท็บที่ลึกกว่าได้ (ยิง event ให้ shell จัดการ)
 
 const GOAL = { water: 8, ex: 45, sleep: 8, steps: 8000 };
-const RING_C = 2 * Math.PI * 22; // r=22 ใน viewBox 52
+const RING_C = 2 * Math.PI * 23; // r=23 ใน viewBox 54
 const fmt = (n) => n.toLocaleString("th-TH", { maximumFractionDigits: 0 });
 
 function dayKey(offset = 0) {
@@ -14,11 +15,11 @@ function dayKey(offset = 0) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-const hasData = (rec) => !!rec && (rec.water > 0 || rec.ex > 0 || rec.sleep > 0 || rec.weight != null || rec.mood != null);
+const hasData = (rec) => !!rec && (rec.water > 0 || rec.ex > 0 || rec.sleep > 0 || rec.steps > 0 || rec.weight != null || rec.mood != null);
 
 // นับวันติดต่อกันที่บันทึกสุขภาพ — ถ้าวันนี้ยังไม่บันทึก ให้เริ่มนับจากเมื่อวาน (streak ยังไม่ขาด)
 function streakOf(days) {
-  let start = hasData(days[dayKey(0)]) ? 0 : 1;
+  const start = hasData(days[dayKey(0)]) ? 0 : 1;
   if (start === 1 && !hasData(days[dayKey(1)])) return 0;
   let n = 0;
   for (let off = start; off < 400; off++) {
@@ -40,9 +41,9 @@ function miniRing(cls, frac, label, center) {
   const f = Math.max(0, Math.min(frac, 1));
   return `<div class="mini ${cls}">
     <div class="dial">
-      <svg viewBox="0 0 52 52">
-        <circle class="track" cx="26" cy="26" r="22"></circle>
-        <circle class="val" cx="26" cy="26" r="22" stroke-dasharray="${f * RING_C} ${RING_C}"></circle>
+      <svg viewBox="0 0 54 54">
+        <circle class="ring-track" cx="27" cy="27" r="23"></circle>
+        <circle class="ring-val" cx="27" cy="27" r="23" stroke-dasharray="${f * RING_C} ${RING_C}"></circle>
       </svg>
       <span class="c">${center}</span>
     </div>
@@ -54,15 +55,16 @@ export default {
   id: "me",
   name: "Me",
   icon: "🙂",
-  defaultSize: { w: 400, h: 720 },
+  defaultSize: { w: 410, h: 740 },
   mount(body) {
     body.classList.add("app-pane", "app-me");
+    let firstPaint = true;
 
     const go = (tab) => document.dispatchEvent(new CustomEvent("pp-go", { detail: tab }));
 
     const render = () => {
       const days = load("health.days", {});
-      const t = days[dayKey()] ?? { water: 0, ex: 0, sleep: 0, weight: null, mood: null };
+      const t = days[dayKey()] ?? { steps: 0, water: 0, ex: 0, sleep: 0, weight: null, mood: null };
       const entries = load("money.entries", []);
       const todos = load("todo.items", []);
       const name = load("os.name", "");
@@ -75,6 +77,7 @@ export default {
       });
       const sumIn = monthRows.filter((e) => e.type === "in").reduce((s, e) => s + e.amount, 0);
       const sumOut = monthRows.filter((e) => e.type === "out").reduce((s, e) => s + e.amount, 0);
+      const net = sumIn - sumOut;
       const todayOut = entries
         .filter((e) => e.date === dayKey() && e.type === "out")
         .reduce((s, e) => s + e.amount, 0);
@@ -83,28 +86,29 @@ export default {
       const streak = streakOf(days);
       const logged = [t.water > 0, t.ex > 0, t.sleep > 0, t.weight != null, t.mood != null].filter(Boolean).length;
       const hasApple = !!load("health.lastImport");
+      const steps = t.steps ?? 0;
 
       body.innerHTML = `
         <header class="me-head">
           <div>
-            <div class="greet">${greet(now.getHours())}</div>
-            <button class="me-name">${name ? `${name}` : "ตั้งชื่อของคุณ"}</button>
-            <div class="me-date">${now.toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" })}</div>
+            <div class="page-sub">${greet(now.getHours())}</div>
+            <button class="me-name">${name || "ตั้งชื่อของคุณ"}</button>
+            <div class="page-sub">${now.toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" })}</div>
           </div>
           <div class="me-av">${name ? name.trim().slice(0, 2) : "PP"}</div>
         </header>
 
-        <button class="me-card ring-card" data-go="health">
-          <div class="mc-top">
-            <span class="mc-title">สุขภาพวันนี้</span>
-            <span class="mc-more">${logged}/5 ครบ ›</span>
+        <button class="card" data-go="health">
+          <div class="card-head">
+            <span class="card-title">สุขภาพวันนี้</span>
+            <span class="card-meta">${logged}/5 ครบ ›</span>
           </div>
           <div class="minis">
             ${miniRing("sleep", (t.sleep ?? 0) / GOAL.sleep, "นอน", `${t.sleep || 0}`)}
             ${
-              // ถ้ามีข้อมูลก้าวจาก Apple Health ให้โชว์ก้าวแทนน้ำ (แม่นกว่า และ PP ไม่ต้องกรอกเอง)
-              t.steps > 0
-                ? miniRing("steps", t.steps / GOAL.steps, "ก้าว", `${Math.round(t.steps / 100) / 10}k`)
+              // มีข้อมูลก้าวจาก Apple Health แล้วให้โชว์ก้าวแทนน้ำ (แม่นกว่า และไม่ต้องกรอกเอง)
+              steps > 0
+                ? miniRing("steps", steps / GOAL.steps, "ก้าว", `${Math.round(steps / 100) / 10}k`)
                 : miniRing("water", (t.water ?? 0) / GOAL.water, "น้ำ", `${t.water || 0}`)
             }
             ${miniRing("ex", (t.ex ?? 0) / GOAL.ex, "ออกกำลัง", `${t.ex || 0}`)}
@@ -115,34 +119,38 @@ export default {
         </button>
 
         <div class="me-duo">
-          <button class="me-card wx-card" data-go="weather">
-            <div class="mc-title">อากาศ</div>
-            <div class="wx-body"><span class="muted" style="font-size:12.5px">กำลังโหลด…</span></div>
+          <button class="card" data-go="weather">
+            <div class="card-title">อากาศ</div>
+            <div class="wx-body"><div class="fin-sub">กำลังโหลด…</div></div>
           </button>
-          <button class="me-card fin-card" data-go="money">
-            <div class="mc-title">คงเหลือเดือนนี้</div>
-            <div class="fin-v ${sumIn - sumOut < 0 ? "neg" : ""}">฿${fmt(sumIn - sumOut)}</div>
+          <button class="card" data-go="money">
+            <div class="card-title">คงเหลือเดือนนี้</div>
+            <div class="fin-v ${net < 0 ? "neg" : ""}"></div>
             <div class="fin-sub">${todayOut > 0 ? `วันนี้ใช้ไป ฿${fmt(todayOut)}` : "วันนี้ยังไม่ได้ใช้เงิน"}</div>
           </button>
         </div>
 
-        <section class="me-card todo-card">
-          <div class="mc-top">
-            <span class="mc-title">งานวันนี้</span>
-            <span class="mc-more">${undone.length ? `เหลือ ${undone.length}` : "เคลียร์หมดแล้ว 🎉"}</span>
+        <section class="card">
+          <div class="card-head">
+            <span class="card-title">งานวันนี้</span>
+            <span class="card-meta">${undone.length ? `เหลือ ${undone.length}` : "เคลียร์หมดแล้ว 🎉"}</span>
           </div>
           <form class="me-todo-add">
-            <input name="text" placeholder="เพิ่มงาน…" autocomplete="off">
-            <button class="btn" type="submit">＋</button>
+            <input name="text" placeholder="เพิ่มงาน…" autocomplete="off" aria-label="เพิ่มงาน">
+            <button class="btn" type="submit">เพิ่ม</button>
           </form>
-          <div class="me-todos"></div>
+          <div class="list me-todos"></div>
         </section>
       `;
 
-      // ---- งานวันนี้: แสดง 5 อันแรกที่ยังไม่เสร็จ ติ๊กได้ในตัว ----
+      const finEl = body.querySelector(".fin-v");
+      if (firstPaint) countUp(finEl, net, { fmt: (n) => `฿${fmt(n)}`, dur: 800 });
+      else finEl.textContent = `฿${fmt(net)}`;
+
+      // ---- งานวันนี้: 5 อันแรกที่ยังไม่เสร็จ ติ๊กได้ในตัว ----
       const listEl = body.querySelector(".me-todos");
       if (!undone.length) {
-        listEl.innerHTML = `<div class="muted" style="font-size:12.5px">ไม่มีงานค้าง — เพิ่มงานใหม่ได้ด้านบน</div>`;
+        listEl.innerHTML = `<div class="empty">ไม่มีงานค้าง — เพิ่มงานใหม่ได้ด้านบน</div>`;
       } else {
         for (const it of undone.slice(0, 5)) {
           const row = document.createElement("label");
@@ -159,7 +167,7 @@ export default {
           listEl.append(row);
         }
         if (undone.length > 5) {
-          listEl.insertAdjacentHTML("beforeend", `<div class="muted" style="font-size:12px">…และอีก ${undone.length - 5} งาน</div>`);
+          listEl.insertAdjacentHTML("beforeend", `<div class="empty">…และอีก ${undone.length - 5} งาน</div>`);
         }
       }
 
@@ -174,7 +182,7 @@ export default {
         render();
       });
 
-      // ---- ตั้งชื่อ: แก้ inline ไม่ใช้ prompt ----
+      // ---- ตั้งชื่อ: แก้ inline ไม่เปิด dialog ----
       body.querySelector(".me-name").addEventListener("click", (e) => {
         const btn = e.currentTarget;
         const input = document.createElement("input");
@@ -186,9 +194,7 @@ export default {
           render();
         };
         input.addEventListener("blur", commit);
-        input.addEventListener("keydown", (ev) => {
-          if (ev.key === "Enter") commit();
-        });
+        input.addEventListener("keydown", (ev) => ev.key === "Enter" && commit());
         btn.replaceWith(input);
         input.focus();
       });
@@ -197,7 +203,7 @@ export default {
         card.addEventListener("click", () => go(card.dataset.go));
       }
 
-      // ---- อากาศ: ใช้ cache ก่อนเสมอ แล้วค่อยอัปเดตเบื้องหลัง ----
+      // ---- อากาศ: cache ก่อนเสมอ แล้วค่อยอัปเดตเบื้องหลัง ----
       const wxBody = body.querySelector(".wx-body");
       const paint = (data) => {
         const c = data.current;
@@ -214,12 +220,13 @@ export default {
           if (body.isConnected) paint(data);
         })
         .catch(() => {
-          if (!cached && body.isConnected) {
-            wxBody.innerHTML = `<span class="muted" style="font-size:12.5px">ออฟไลน์</span>`;
-          }
+          if (!cached && body.isConnected) wxBody.innerHTML = `<div class="fin-sub">ออฟไลน์</div>`;
         });
+
+      firstPaint = false;
     };
 
+    flush(body);
     render();
   },
 };

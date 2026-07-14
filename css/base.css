@@ -36,6 +36,14 @@
   --shadow-lg: 0 16px 48px rgba(20, 22, 24, 0.18);
   --radius: 14px;
   --taskbar-h: 52px;
+
+  /* ---- design system: จังหวะ/ทรง/ความเร็ว ใช้ร่วมกันทุกแอป ---- */
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --ease: cubic-bezier(0.22, 0.7, 0.2, 1);
+  --dur: 260ms;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -75,6 +83,28 @@ button {
   color: inherit;
 }
 
+/* คีย์บอร์ดต้องเห็นเสมอว่าอยู่ตรงไหน แต่เมาส์ไม่ต้องเห็นกรอบ */
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
 .hidden {
   display: none !important;
+}
+
+/* เคารพคนที่ปิดแอนิเมชันในระบบ — ทุก motion ในแอปนี้เป็นของประดับ ไม่ใช่ข้อมูล */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
