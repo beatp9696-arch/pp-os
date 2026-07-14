@@ -15,6 +15,7 @@ const ICONS = {
   more: I('<path d="M4 7h16M4 12h16M4 17h16"/>'),
   back: I('<path d="M15 5l-7 7 7 7"/>'),
   chev: I('<path d="M9 5l7 7-7 7"/>'),
+  ext: I('<path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/>'),
 };
 
 const TABS = [
@@ -30,6 +31,23 @@ const MORE_APPS = [
   ["notes", "A scratchpad that saves itself"],
   ["todo", "Every task (Me shows the first five)"],
   ["calculator", "Quick math"],
+];
+
+// ---- Moatrices ในแอป ----
+// เว็บ (beatp9696-arch.github.io) กับแอป (…/pp-os/) อยู่ origin เดียวกัน และ GitHub Pages
+// ไม่ส่ง X-Frame-Options → ฝังเป็น web view ในแอปได้เลย ไม่ต้องเด้งออกเบราว์เซอร์
+// แอปถูกเสิร์ฟที่ <root>/pp-os/ เสมอ → เว็บคือระดับบนขึ้นไปหนึ่งชั้น (same origin จริงๆ)
+// ถ้ารัน pp-os เดี่ยวๆ ตอน dev (ไม่มี /pp-os/ ใน path) ค่อย fallback ไปเว็บจริง
+const SITE = location.pathname.includes("/pp-os/")
+  ? location.pathname.replace(/pp-os\/.*$/, "")
+  : "https://beatp9696-arch.github.io/";
+
+const WEB_VIEWS = [
+  ["Moatrices", "index.html", "📈", "Home — latest pieces and series"],
+  ["Articles", "articles.html", "📰", "Every deep dive in one list"],
+  ["Stocks", "stocks.html", "🏛️", "The portfolio companies"],
+  ["Tools", "tools.html", "🧰", "Reverse DCF and the rest"],
+  ["Dashboard", "dashboard.html", "📊", "Indices and the MAG7 tape"],
 ];
 
 // สีแถบสถานะของมือถือ ให้กลืนกับพื้นหลังของแท็บที่เปิดอยู่
@@ -113,6 +131,18 @@ function renderMore() {
 
   pane.innerHTML = `
     <h1 class="more-h">More</h1>
+
+    <div class="more-sec">Moatrices</div>
+    <div class="more-list">
+      ${WEB_VIEWS.map(
+        ([title, path, ico, desc]) => `<button class="more-row" data-web="${path}" data-title="${title}">
+          <span class="mr-ico">${ico}</span>
+          <span class="mr-txt"><b>${title}</b><small>${desc}</small></span>
+          <span class="mr-chev">${ICONS.chev}</span>
+        </button>`
+      ).join("")}
+    </div>
+
     <div class="more-sec">Apps</div>
     <div class="more-list">
       ${MORE_APPS.map(([id, desc]) => {
@@ -124,6 +154,7 @@ function renderMore() {
         </button>`;
       }).join("")}
     </div>
+
     <div class="more-sec">Settings</div>
     <div class="more-list">
       <button class="more-row" data-act="hk">
@@ -153,6 +184,9 @@ function renderMore() {
   for (const row of pane.querySelectorAll("[data-app]")) {
     row.addEventListener("click", () => openSub(row.dataset.app));
   }
+  for (const row of pane.querySelectorAll("[data-web]")) {
+    row.addEventListener("click", () => openWeb(row.dataset.web, row.dataset.title));
+  }
   pane.querySelector('[data-act="hk"]').addEventListener("click", () => {
     goTab("health"); // ชีตนำเข้าอยู่ในแอป Health — เด้งไปแล้วสั่งเปิดให้เลย
     document.dispatchEvent(new CustomEvent("pp-hk-open"));
@@ -164,9 +198,9 @@ function renderMore() {
   pane.querySelector('[data-act="export"]').addEventListener("click", exportData);
 }
 
-// แอปใน More เปิดเป็นหน้าซ้อน มีปุ่มย้อนกลับ (ปุ่ม back ของเครื่องก็ใช้ได้)
-function openSub(appId) {
-  const app = getApp(appId);
+// โครงหน้าซ้อนของ More: แถบบน (ย้อนกลับ + ชื่อ + ปุ่มเสริม) แล้วคืน pane ว่างให้เอาไปใส่อะไรก็ได้
+// ปุ่ม back ของเครื่อง (Android / ปัดขอบจอ) ใช้ได้ด้วย เพราะดัน state เข้า history
+function subShell(id, titleHTML, actionHTML = "") {
   view.scrollTop = 0;
   view.innerHTML = "";
 
@@ -174,8 +208,9 @@ function openSub(appId) {
   wrap.className = "sub-wrap";
   wrap.innerHTML = `
     <header class="sub-bar">
-      <button class="sub-back">${ICONS.back}</button>
-      <span class="sub-title">${app.icon} ${app.name}</span>
+      <button class="sub-back" aria-label="Back">${ICONS.back}</button>
+      <span class="sub-title">${titleHTML}</span>
+      ${actionHTML}
     </header>
   `;
   const pane = document.createElement("div");
@@ -183,8 +218,7 @@ function openSub(appId) {
   wrap.append(pane);
   view.append(wrap);
 
-  // ดันเข้า history เพื่อให้ปุ่ม back ของเครื่อง (Android/ท่าทางปัด) พากลับหน้า More ได้
-  history.pushState({ sub: appId }, "");
+  history.pushState({ sub: id }, "");
   const onPop = () => {
     removeEventListener("popstate", onPop);
     if (shell.dataset.tab === "more") goTab("more");
@@ -192,14 +226,49 @@ function openSub(appId) {
   addEventListener("popstate", onPop);
 
   wrap.querySelector(".sub-back").addEventListener("click", () => {
-    if (history.state?.sub === appId) history.back(); // popstate จะพากลับเอง
+    if (history.state?.sub === id) history.back(); // popstate จะพากลับเอง
     else {
       removeEventListener("popstate", onPop);
       goTab("more");
     }
   });
 
+  return { wrap, pane };
+}
+
+function openSub(appId) {
+  const app = getApp(appId);
+  const { pane } = subShell(appId, `${app.icon} ${app.name}`);
   app.mount(pane);
+}
+
+// Moatrices เปิด "ในแอป" — iframe เต็มจอใต้แถบบน แท็บล่างยังอยู่ ไม่เด้งออกเบราว์เซอร์
+function openWeb(path, title) {
+  const url = SITE + path;
+  const { wrap, pane } = subShell(
+    `web:${path}`,
+    `📈 ${title}`,
+    `<a class="sub-ext" href="${url}" target="_blank" rel="noopener" title="Open in browser" aria-label="Open in browser">${ICONS.ext}</a>`
+  );
+
+  pane.classList.add("web-pane");
+  pane.innerHTML = `
+    <div class="web-load">Loading ${title}…</div>
+    <iframe class="web-frame" src="${url}" title="${title}" referrerpolicy="no-referrer"></iframe>
+  `;
+
+  const frame = pane.querySelector(".web-frame");
+  frame.addEventListener("load", () => {
+    pane.querySelector(".web-load")?.remove();
+    frame.classList.add("ready");
+    // เว็บอยู่ origin เดียวกันตอนรันจริง → อ่านชื่อหน้าที่ผู้ใช้กดเข้าไปข้างในมาโชว์บนแถบได้
+    try {
+      const t = frame.contentDocument?.title;
+      if (t) wrap.querySelector(".sub-title").textContent = `📈 ${t.replace(/\s*[·|—-]\s*Moatrices.*$/i, "")}`;
+    } catch {
+      /* ต่าง origin (ตอนรัน localhost) — ไม่เป็นไร ใช้ชื่อเดิม */
+    }
+  });
 }
 
 function exportData() {

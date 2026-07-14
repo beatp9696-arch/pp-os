@@ -1,7 +1,7 @@
 // Service worker — precache app shell ทั้งหมด ใช้ offline ได้เต็มตัว
 // เปลี่ยนไฟล์เมื่อไหร่ให้ bump VERSION เพื่อบังคับ cache ใหม่
 
-const VERSION = "pp-os-v7";
+const VERSION = "pp-os-v8";
 
 const SHELL = [
   "./",
@@ -53,7 +53,14 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   const req = e.request;
-  if (req.method !== "GET" || new URL(req.url).origin !== location.origin) return;
+  const url = new URL(req.url);
+  if (req.method !== "GET" || url.origin !== location.origin) return;
+
+  // Moatrices ถูกฝังเป็น iframe ใน More และอยู่ origin เดียวกัน — ถ้าไม่กันไว้
+  // ทุกหน้าที่เปิดในเว็บจะไหลเข้ามาอยู่ใน cache ของแอป (บวม + เสิร์ฟหน้าเก่าตอนออฟไลน์)
+  const scope = new URL(self.registration.scope).pathname;
+  if (!url.pathname.startsWith(scope)) return;
+
   e.respondWith(
     caches.match(req, { ignoreSearch: true }).then(
       (hit) =>
