@@ -5,9 +5,13 @@ import { openApp } from "./core/window-manager.js";
 import { initTaskbar } from "./core/taskbar.js";
 
 import notes from "./apps/notes.js";
+import todo from "./apps/todo.js";
+import health from "./apps/health.js";
+import weather from "./apps/weather.js";
+import money from "./apps/money.js";
 import calculator from "./apps/calculator.js";
 
-[notes, calculator].forEach(register);
+[notes, todo, health, weather, money, calculator].forEach(register);
 
 const icons = document.getElementById("icons");
 for (const app of allApps()) {
