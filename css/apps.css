@@ -5,6 +5,7 @@
   gap: 12px;
   padding: 14px 16px;
   font-size: 14px;
+  min-height: 100%;
 }
 
 .app-pane h3 {
@@ -69,32 +70,6 @@
 
 .btn-ghost:hover {
   background: var(--accent-tint);
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-
-.stat {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 8px 10px;
-  background: color-mix(in srgb, var(--bg) 45%, var(--surface));
-}
-
-.stat .k {
-  font-family: var(--font-head);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-.stat .v {
-  font-family: var(--font-mono);
-  font-size: 15px;
-  margin-top: 2px;
 }
 
 .muted {
@@ -240,13 +215,251 @@
   color: #fff;
 }
 
-/* ---- Health ---- */
-.today-date {
-  font-family: var(--font-head);
-  font-weight: 700;
-  font-size: 15px;
+/* ============================================================
+   Health — WHOOP-inspired: จอดำ วงแหวน glow เขียว ตัวเลข mono
+   identity ของแอปนี้คงที่ ไม่ตามธีมสว่าง/มืดของ OS
+   ============================================================ */
+.app-health {
+  --h-card: rgba(255, 255, 255, 0.045);
+  --h-border: rgba(255, 255, 255, 0.09);
+  --h-text: #e6edf3;
+  --h-muted: #8b949e;
+  --h-green: #2fd287;
+  --h-blue: #6ea8fe;
+  --h-cyan: #38d6e3;
+  background:
+    radial-gradient(560px 300px at 50% -8%, rgba(47, 210, 135, 0.16), transparent 70%),
+    #0c1014;
+  color: var(--h-text);
+  gap: 13px;
 }
 
+.app-health h3 {
+  color: var(--h-muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.h-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.h-brand {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--h-green);
+}
+
+.h-date {
+  font-size: 12.5px;
+  color: var(--h-muted);
+}
+
+.rings {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 4px 0 2px;
+}
+
+.ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.ring .dial {
+  position: relative;
+  width: 84px;
+  height: 84px;
+}
+
+.ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring .track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 7;
+}
+
+.ring .val {
+  fill: none;
+  stroke-width: 7;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.45s ease;
+}
+
+.ring[data-c="blue"] .val {
+  stroke: var(--h-blue);
+  filter: drop-shadow(0 0 5px rgba(110, 168, 254, 0.55));
+}
+
+.ring[data-c="green"] .val {
+  stroke: var(--h-green);
+  filter: drop-shadow(0 0 5px rgba(47, 210, 135, 0.55));
+}
+
+.ring[data-c="cyan"] .val {
+  stroke: var(--h-cyan);
+  filter: drop-shadow(0 0 5px rgba(56, 214, 227, 0.55));
+}
+
+.ring .pct {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ring .name {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--h-muted);
+}
+
+.ring .sub {
+  font-size: 11.5px;
+  color: var(--h-muted);
+  margin-top: -3px;
+}
+
+.h-insight {
+  border: 1px solid var(--h-border);
+  background: var(--h-card);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.h-insight .t {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: var(--h-green);
+  margin-bottom: 4px;
+}
+
+.h-insight.warn .t {
+  color: #f0b429;
+}
+
+.h-insight .d {
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.h-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.h-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--h-border);
+  background: var(--h-card);
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--h-muted);
+}
+
+.h-chip b {
+  color: var(--h-text);
+  font-weight: 500;
+}
+
+.h-chip.mon.ok {
+  border-color: rgba(47, 210, 135, 0.45);
+  color: var(--h-green);
+}
+
+.h-chip.mon.ok b {
+  color: var(--h-green);
+}
+
+.app-health .step-row {
+  border: 1px solid var(--h-border);
+  background: var(--h-card);
+  border-radius: 12px;
+  padding: 9px 12px;
+}
+
+.app-health .step-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--h-border);
+  color: var(--h-text);
+  border-radius: 50%;
+}
+
+.app-health .step-btn:hover {
+  background: rgba(47, 210, 135, 0.16);
+}
+
+.app-health input {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--h-border);
+  color: var(--h-text);
+}
+
+.app-health input:focus {
+  border-color: var(--h-green);
+}
+
+.app-health .mood button.sel {
+  background: rgba(47, 210, 135, 0.16);
+  border-color: var(--h-green);
+}
+
+.app-health .bars {
+  border-bottom-color: var(--h-border);
+}
+
+.app-health .trend-head .cap {
+  color: var(--h-muted);
+}
+
+.app-health .trend[data-m="water"] .bar {
+  background: rgba(47, 210, 135, 0.3);
+}
+
+.app-health .trend[data-m="water"] .bar.today {
+  background: var(--h-green);
+}
+
+.app-health .trend[data-m="ex"] .bar {
+  background: rgba(56, 214, 227, 0.3);
+}
+
+.app-health .trend[data-m="ex"] .bar.today {
+  background: var(--h-cyan);
+}
+
+.app-health .trend[data-m="sleep"] .bar {
+  background: rgba(110, 168, 254, 0.3);
+}
+
+.app-health .trend[data-m="sleep"] .bar.today {
+  background: var(--h-blue);
+}
+
+/* Health: แถวบันทึก (โครงเดิม สีตามธีมแอป) */
 .step-row {
   display: flex;
   align-items: center;
@@ -279,10 +492,6 @@
   flex-shrink: 0;
 }
 
-.step-btn:hover {
-  background: var(--accent-tint);
-}
-
 .weight-input {
   width: 90px;
   text-align: right;
@@ -301,11 +510,6 @@
   border-radius: 10px;
   padding: 3px 7px;
   cursor: pointer;
-}
-
-.mood button.sel {
-  background: var(--accent-tint);
-  border-color: var(--accent);
 }
 
 .trend {
@@ -338,14 +542,34 @@
   flex: 1;
   min-height: 2px;
   border-radius: 3px 3px 0 0;
-  background: color-mix(in srgb, var(--accent) 45%, var(--surface));
 }
 
-.bars .bar.today {
-  background: var(--accent);
+/* ============================================================
+   Weather — Acme-inspired: กระดาษครีม หัวเรื่อง serif
+   แท่ง range อุณหภูมิบนสเกลร่วมทั้งสัปดาห์
+   ============================================================ */
+.app-weather {
+  --w-paper: #faf4e4;
+  --w-ink: #33291c;
+  --w-muted: #94886f;
+  --w-line: #e8dfc8;
+  --w-rust: #b4552d;
+  --w-rain: #4a7dbb;
+  background:
+    radial-gradient(700px 420px at 85% -10%, rgba(180, 85, 45, 0.06), transparent 65%),
+    var(--w-paper);
+  color: var(--w-ink);
+  gap: 10px;
 }
 
-/* ---- Weather ---- */
+.wx-serif {
+  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  font-weight: 700;
+  font-size: 21px;
+  letter-spacing: -0.01em;
+  margin-top: 6px;
+}
+
 .wx-head {
   display: flex;
   align-items: center;
@@ -356,38 +580,68 @@
   flex: 1;
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 14px;
+  color: var(--w-rust);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+.app-weather .btn-ghost {
+  background: transparent;
+  border-color: var(--w-line);
+  color: var(--w-ink);
+}
+
+.app-weather .btn-ghost:hover {
+  background: rgba(180, 85, 45, 0.08);
+}
+
+.wx-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .wx-now {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .wx-now .emoji {
-  font-size: 46px;
+  font-size: 54px;
   line-height: 1;
 }
 
 .wx-now .t {
-  font-family: var(--font-head);
-  font-size: 42px;
+  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  font-size: 52px;
   font-weight: 700;
   line-height: 1;
 }
 
 .wx-now .desc {
   font-size: 14px;
+  margin-top: 3px;
 }
 
 .wx-meta {
-  font-size: 12.5px;
-  color: var(--muted);
+  font-size: 12px;
+  color: var(--w-muted);
   margin-top: 4px;
+}
+
+.wx-chart {
+  border: 1px solid var(--w-line);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  padding: 8px 6px 4px;
+}
+
+.wx-chart svg {
+  width: 100%;
+  display: block;
 }
 
 .wx-days {
@@ -396,56 +650,312 @@
 }
 
 .wx-day {
-  display: flex;
+  display: grid;
+  grid-template-columns: 42px 24px 44px 1fr;
   align-items: center;
-  gap: 10px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--border);
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--w-line);
   font-size: 13px;
 }
 
+.wx-day:last-child {
+  border-bottom: 0;
+}
+
 .wx-day .d {
-  width: 44px;
   font-family: var(--font-head);
   font-weight: 600;
 }
 
 .wx-day .rain {
-  color: var(--muted);
-  font-size: 12px;
-  width: 48px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--w-rain);
 }
 
-.wx-day .range {
-  margin-left: auto;
+.wx-range {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.wx-range .lo,
+.wx-range .hi {
   font-family: var(--font-mono);
-  font-size: 12.5px;
+  font-size: 11.5px;
+  color: var(--w-muted);
+  width: 26px;
+  flex-shrink: 0;
+}
+
+.wx-range .lo {
+  text-align: right;
+}
+
+.wx-range .track {
+  flex: 1;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--w-line);
+  position: relative;
+}
+
+.wx-range .pill {
+  position: absolute;
+  top: -1.5px;
+  height: 10px;
+  border-radius: 5px;
+  background: var(--w-ink);
 }
 
 .wx-note {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--w-muted);
 }
 
-/* ---- Money ---- */
-.month-nav {
+/* ============================================================
+   Money — FinTrack-inspired: จอดำ accent เขียวมะนาว
+   Balance ใหญ่ + การ์ดเก็บเงินพร้อมวงแหวน + tabs กรองรายการ
+   ============================================================ */
+.app-money {
+  --mn-card: #171c16;
+  --mn-border: rgba(255, 255, 255, 0.08);
+  --mn-text: #edf2e6;
+  --mn-muted: #8f9885;
+  --mn-lime: #cdf463;
+  --mn-on-lime: #161b07;
+  --mn-red: #ff8177;
+  background:
+    radial-gradient(520px 300px at 88% -6%, rgba(205, 244, 99, 0.1), transparent 65%),
+    #0f120e;
+  color: var(--mn-text);
+}
+
+.app-money h3 {
+  color: var(--mn-muted);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.m-nav {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.month-nav .m {
+.m-nav .m {
   flex: 1;
   text-align: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--mn-muted);
+}
+
+.app-money .btn-ghost {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--mn-border);
+  color: var(--mn-text);
+}
+
+.app-money .btn-ghost:hover {
+  background: rgba(205, 244, 99, 0.14);
+}
+
+.m-balance .k {
+  font-size: 12.5px;
+  color: var(--mn-muted);
+}
+
+.m-balance .v {
   font-family: var(--font-head);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 34px;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.m-balance .v.neg {
+  color: var(--mn-red);
+}
+
+.m-well {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--mn-border);
+  background: var(--mn-card);
+  border-radius: 16px;
+  padding: 12px 14px;
+}
+
+.m-well .txt {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--mn-muted);
+}
+
+.m-well .txt b {
+  display: block;
+  color: var(--mn-text);
+  font-family: var(--font-head);
+  font-size: 14.5px;
+}
+
+.m-well .dial {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.m-well svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.m-well .track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.09);
+  stroke-width: 6;
+}
+
+.m-well .val {
+  fill: none;
+  stroke: var(--mn-lime);
+  stroke-width: 6;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px rgba(205, 244, 99, 0.5));
+  transition: stroke-dasharray 0.45s ease;
+}
+
+.m-well .pct {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--mn-lime);
+}
+
+.m-well.over .val {
+  stroke: var(--mn-red);
+  filter: drop-shadow(0 0 5px rgba(255, 129, 119, 0.45));
+}
+
+.m-well.over .pct {
+  color: var(--mn-red);
+}
+
+.m-duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.m-card {
+  border: 1px solid var(--mn-border);
+  background: var(--mn-card);
+  border-radius: 14px;
+  padding: 10px 12px;
+}
+
+.m-card .k {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--mn-muted);
+}
+
+.m-card .k .dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+}
+
+.m-card.in .dot {
+  background: rgba(205, 244, 99, 0.15);
+  color: var(--mn-lime);
+}
+
+.m-card.out .dot {
+  background: rgba(255, 129, 119, 0.14);
+  color: var(--mn-red);
+}
+
+.m-card .v {
+  font-family: var(--font-mono);
+  font-size: 16.5px;
+  margin-top: 4px;
+}
+
+.app-money input,
+.app-money select {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--mn-border);
+  color: var(--mn-text);
+}
+
+.app-money input:focus,
+.app-money select:focus {
+  border-color: var(--mn-lime);
+}
+
+.app-money input::placeholder {
+  color: var(--mn-muted);
+}
+
+.app-money .btn {
+  background: var(--mn-lime);
+  border-color: var(--mn-lime);
+  color: var(--mn-on-lime);
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.app-money .btn:hover {
+  background: #daff78;
+  border-color: #daff78;
 }
 
 .money-form {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.m-tabs {
+  display: flex;
+  gap: 16px;
+  border-bottom: 1px solid var(--mn-border);
+  margin-top: 4px;
+}
+
+.m-tabs button {
+  background: none;
+  border: 0;
+  padding: 6px 2px 9px;
+  margin-bottom: -1px;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--mn-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.m-tabs button.on {
+  color: var(--mn-lime);
+  border-bottom-color: var(--mn-lime);
 }
 
 .cat-row {
@@ -466,20 +976,20 @@
   flex: 1;
   height: 8px;
   border-radius: 4px;
-  background: var(--key);
+  background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
 
 .cat-row .fill {
   height: 100%;
   border-radius: 4px;
-  background: var(--accent);
+  background: var(--mn-lime);
 }
 
 .cat-row .amt {
   font-family: var(--font-mono);
   font-size: 12px;
-  color: var(--muted);
+  color: var(--mn-muted);
   min-width: 86px;
   text-align: right;
 }
@@ -494,12 +1004,12 @@
   align-items: center;
   gap: 8px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--mn-border);
   font-size: 13px;
 }
 
 .entry .d {
-  color: var(--muted);
+  color: var(--mn-muted);
   font-size: 12px;
   width: 46px;
   flex-shrink: 0;
@@ -519,9 +1029,17 @@
 }
 
 .entry .amt.in {
-  color: var(--accent-strong);
+  color: var(--mn-lime);
 }
 
 .entry .amt.out {
-  color: #e5484d;
+  color: var(--mn-red);
+}
+
+.app-money .x-btn {
+  color: var(--mn-muted);
+}
+
+.app-money .muted {
+  color: var(--mn-muted);
 }

@@ -54,26 +54,71 @@
   width: 88px;
   padding: 12px 6px 10px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 14px;
   background: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   cursor: pointer;
 }
 
 .desk-icon:hover {
-  background: var(--accent-tint);
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
 
-.desk-icon:active {
-  filter: brightness(0.96);
+.desk-icon:hover .glyph {
+  transform: translateY(-2px);
 }
 
+.desk-icon:active .glyph {
+  transform: scale(0.95);
+}
+
+/* tile แบบแอปจริง — แต่ละแอปถือ identity สีของตัวเอง */
 .desk-icon .glyph {
-  font-size: 34px;
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  font-size: 27px;
   line-height: 1;
+  border-radius: 17px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 5px 16px rgba(15, 18, 20, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: transform 0.15s ease;
+  background: linear-gradient(160deg, #e9e4d8, #cfc8b6);
+}
+
+.desk-icon[data-app="notes"] .glyph {
+  background: linear-gradient(150deg, #fdeebe, #f0c979);
+}
+
+.desk-icon[data-app="todo"] .glyph {
+  background: linear-gradient(150deg, #d9f2df, #8fd3a0);
+}
+
+.desk-icon[data-app="health"] .glyph {
+  background:
+    radial-gradient(44px 32px at 50% -4px, rgba(47, 210, 135, 0.55), transparent 75%),
+    linear-gradient(160deg, #17211c, #0b0f0d);
+  border-color: rgba(47, 210, 135, 0.25);
+}
+
+.desk-icon[data-app="weather"] .glyph {
+  background: linear-gradient(160deg, #fdf7e6, #eedcb2);
+}
+
+.desk-icon[data-app="money"] .glyph {
+  background:
+    radial-gradient(44px 32px at 78% -4px, rgba(205, 244, 99, 0.5), transparent 75%),
+    linear-gradient(160deg, #1b2314, #0e120b);
+  border-color: rgba(205, 244, 99, 0.25);
+}
+
+.desk-icon[data-app="calculator"] .glyph {
+  background: linear-gradient(160deg, #3a424e, #1f242c);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .desk-icon .label {
@@ -81,6 +126,41 @@
   font-size: 12px;
   font-weight: 600;
   color: var(--text);
+}
+
+/* ---- นาฬิกา + คำทักทายบน desktop ---- */
+#desk-widget {
+  position: absolute;
+  top: 30px;
+  right: 36px;
+  text-align: right;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.dw-greet {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+
+.dw-time {
+  font-family: var(--font-head);
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1.08;
+  color: color-mix(in srgb, var(--text) 84%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.dw-date {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 2px;
 }
 
 /* ชั้นวางหน้าต่าง — โปร่งให้คลิก icon ทะลุได้ ยกเว้นตัวหน้าต่างเอง */
@@ -94,7 +174,7 @@
   pointer-events: auto;
 }
 
-/* ---- มือถือ: icons เรียงแถวนอน + wordmark เล็กลง ---- */
+/* ---- มือถือ: icons เรียงแถวนอน + wordmark เล็กลง + นาฬิกาย้ายลงล่างซ้าย ---- */
 @media (max-width: 700px) {
   #icons {
     flex-direction: row;
@@ -107,5 +187,21 @@
     font-size: 44px;
     right: 20px;
     bottom: 14px;
+  }
+
+  #desk-widget {
+    top: auto;
+    right: auto;
+    left: 18px;
+    bottom: 20px;
+    text-align: left;
+  }
+
+  .dw-time {
+    font-size: 44px;
+  }
+
+  .dw-date {
+    font-size: 13px;
   }
 }

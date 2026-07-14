@@ -17,10 +17,33 @@ const icons = document.getElementById("icons");
 for (const app of allApps()) {
   const btn = document.createElement("button");
   btn.className = "desk-icon";
+  btn.dataset.app = app.id;
   btn.innerHTML = `<span class="glyph">${app.icon}</span><span class="label">${app.name}</span>`;
   btn.addEventListener("click", () => openApp(app));
   icons.append(btn);
 }
+
+// นาฬิกา + คำทักทายบน desktop — เติมชีวิตให้พื้นที่ว่าง
+const widget = document.createElement("div");
+widget.id = "desk-widget";
+widget.innerHTML = `<div class="dw-greet"></div><div class="dw-time"></div><div class="dw-date"></div>`;
+document.getElementById("desktop").append(widget);
+
+const tickWidget = () => {
+  const now = new Date();
+  const h = now.getHours();
+  widget.querySelector(".dw-greet").textContent =
+    h < 5 ? "ดึกแล้ว นอนได้แล้วนะ" : h < 12 ? "สวัสดีตอนเช้า ☀️" : h < 17 ? "สวัสดีตอนบ่าย" : h < 21 ? "สวัสดีตอนเย็น" : "ค่ำแล้ว พักผ่อนบ้างนะ";
+  widget.querySelector(".dw-time").textContent = now.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  widget.querySelector(".dw-date").textContent = now.toLocaleDateString("th-TH", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+tickWidget();
+setInterval(tickWidget, 10_000);
 
 initTaskbar();
 

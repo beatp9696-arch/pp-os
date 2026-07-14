@@ -6,6 +6,7 @@ const CATS = {
 };
 
 const fmt = (n) => n.toLocaleString("th-TH", { maximumFractionDigits: 2 });
+const RING_C = 2 * Math.PI * 26; // เส้นรอบวง r=26 ใน viewBox 64
 
 function localDate() {
   const d = new Date();
@@ -16,23 +17,37 @@ export default {
   id: "money",
   name: "Money",
   icon: "💰",
-  defaultSize: { w: 440, h: 620 },
+  defaultSize: { w: 430, h: 720 },
   mount(body) {
     body.classList.add("app-pane", "app-money");
     let entries = load("money.entries", []);
     const now = new Date();
     let ym = { y: now.getFullYear(), m: now.getMonth() };
+    let filter = "all"; // all | out | in
 
     body.innerHTML = `
-      <div class="month-nav">
+      <div class="m-nav">
         <button class="btn-ghost prev">‹</button>
         <span class="m"></span>
         <button class="btn-ghost next">›</button>
       </div>
-      <div class="stats">
-        <div class="stat"><div class="k">รายรับ</div><div class="v in"></div></div>
-        <div class="stat"><div class="k">รายจ่าย</div><div class="v out"></div></div>
-        <div class="stat"><div class="k">คงเหลือ</div><div class="v net"></div></div>
+      <div class="m-balance">
+        <div class="k">คงเหลือเดือนนี้</div>
+        <div class="v"></div>
+      </div>
+      <div class="m-well hidden">
+        <div class="txt"><b></b><span></span></div>
+        <div class="dial">
+          <svg viewBox="0 0 64 64">
+            <circle class="track" cx="32" cy="32" r="26"></circle>
+            <circle class="val" cx="32" cy="32" r="26" stroke-dasharray="0 ${RING_C}"></circle>
+          </svg>
+          <div class="pct"></div>
+        </div>
+      </div>
+      <div class="m-duo">
+        <div class="m-card in"><div class="k"><span class="dot">↓</span>รายรับ</div><div class="v"></div></div>
+        <div class="m-card out"><div class="k"><span class="dot">↑</span>รายจ่าย</div><div class="v"></div></div>
       </div>
       <form class="money-form">
         <div class="row">
@@ -42,12 +57,16 @@ export default {
         <div class="row">
           <select name="cat" style="flex:1"></select>
           <input name="note" placeholder="โน้ต (ไม่บังคับ)" autocomplete="off" style="flex:1.4">
-          <button class="btn" type="submit">บันทึก</button>
+          <button class="btn" type="submit">＋ บันทึก</button>
         </div>
       </form>
       <h3>รายจ่ายตามหมวด</h3>
       <div class="breakdown"></div>
-      <h3>รายการเดือนนี้</h3>
+      <div class="m-tabs">
+        <button type="button" data-f="all" class="on">ทั้งหมด</button>
+        <button type="button" data-f="out">รายจ่าย</button>
+        <button type="button" data-f="in">รายรับ</button>
+      </div>
       <div class="entries"></div>
     `;
 
@@ -67,7 +86,7 @@ export default {
     };
 
     const update = () => {
-      body.querySelector(".month-nav .m").textContent = new Date(ym.y, ym.m, 1).toLocaleDateString("th-TH", {
+      body.querySelector(".m-nav .m").textContent = new Date(ym.y, ym.m, 1).toLocaleDateString("th-TH", {
         month: "long",
         year: "numeric",
       });
@@ -75,9 +94,31 @@ export default {
       const rows = entries.filter(inMonth);
       const sumIn = rows.filter((e) => e.type === "in").reduce((s, e) => s + e.amount, 0);
       const sumOut = rows.filter((e) => e.type === "out").reduce((s, e) => s + e.amount, 0);
-      body.querySelector(".stat .v.in").textContent = fmt(sumIn);
-      body.querySelector(".stat .v.out").textContent = fmt(sumOut);
-      body.querySelector(".stat .v.net").textContent = fmt(sumIn - sumOut);
+      const net = sumIn - sumOut;
+
+      const balEl = body.querySelector(".m-balance .v");
+      balEl.textContent = `฿${fmt(net)}`;
+      balEl.classList.toggle("neg", net < 0);
+      body.querySelector(".m-card.in .v").textContent = `฿${fmt(sumIn)}`;
+      body.querySelector(".m-card.out .v").textContent = `฿${fmt(sumOut)}`;
+
+      // การ์ด "เก็บได้" แบบ FinTrack — โชว์เฉพาะเดือนที่มีรายรับ
+      const well = body.querySelector(".m-well");
+      well.classList.toggle("hidden", sumIn <= 0);
+      if (sumIn > 0) {
+        const rate = net / sumIn;
+        well.classList.toggle("over", net < 0);
+        if (net >= 0) {
+          well.querySelector("b").textContent = "เยี่ยมมาก!";
+          well.querySelector("span").textContent = `เดือนนี้เก็บได้ ฿${fmt(net)} จากรายรับทั้งหมด`;
+        } else {
+          well.querySelector("b").textContent = "ใช้เกินรายรับ";
+          well.querySelector("span").textContent = `เดือนนี้ติดลบ ฿${fmt(-net)} — เช็ครายจ่ายตามหมวดด้านล่าง`;
+        }
+        const frac = Math.max(0.01, Math.min(Math.abs(rate), 1));
+        well.querySelector(".val").setAttribute("stroke-dasharray", `${frac * RING_C} ${RING_C}`);
+        well.querySelector(".pct").textContent = `${Math.round(rate * 100)}%`;
+      }
 
       // breakdown รายจ่ายต่อหมวด — แท่งสีเดียว (identity อยู่ที่ label) เรียงมาก→น้อย
       const byCat = {};
@@ -98,7 +139,8 @@ export default {
 
       const list = body.querySelector(".entries");
       list.innerHTML = "";
-      for (const e of rows.slice().sort((a, b) => b.id - a.id)) {
+      const visible = rows.filter((e) => filter === "all" || e.type === filter);
+      for (const e of visible.slice().sort((a, b) => b.id - a.id)) {
         const row = document.createElement("div");
         row.className = "entry";
         const emoji = (CATS[e.type].find(([c]) => c === e.cat) ?? ["", "•"])[1];
@@ -116,8 +158,16 @@ export default {
         });
         list.append(row);
       }
-      if (!rows.length) list.innerHTML = `<div class="muted" style="font-size:13px">ยังไม่มีรายการ</div>`;
+      if (!visible.length) list.innerHTML = `<div class="muted" style="font-size:13px">ยังไม่มีรายการ</div>`;
     };
+
+    body.querySelector(".m-tabs").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-f]");
+      if (!btn) return;
+      filter = btn.dataset.f;
+      body.querySelectorAll(".m-tabs button").forEach((b) => b.classList.toggle("on", b === btn));
+      update();
+    });
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();

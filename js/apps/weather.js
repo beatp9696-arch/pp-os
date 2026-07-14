@@ -28,6 +28,7 @@ async function fetchForecast({ lat, lon }) {
     latitude: lat,
     longitude: lon,
     current: "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m",
+    hourly: "temperature_2m",
     daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
     timezone: "auto",
     forecast_days: "6",
@@ -37,11 +38,47 @@ async function fetchForecast({ lat, lon }) {
   return res.json();
 }
 
+// กราฟเส้น 24 ชม. ข้างหน้า สไตล์ Acme — จุดทุก 3 ชม. + อุณหภูมิกำกับ
+function hourlyChart(hourly) {
+  if (!hourly?.time?.length) return "";
+  const nowMs = Date.now();
+  let start = hourly.time.findIndex((t) => new Date(t).getTime() >= nowMs);
+  if (start < 0) start = 0;
+
+  const pts = [];
+  for (let i = 0; i < 8; i++) {
+    const j = start + i * 3;
+    if (j >= hourly.time.length) break;
+    pts.push({ h: new Date(hourly.time[j]).getHours(), t: hourly.temperature_2m[j] });
+  }
+  if (pts.length < 3) return "";
+
+  const min = Math.min(...pts.map((p) => p.t));
+  const max = Math.max(...pts.map((p) => p.t));
+  const span = Math.max(1, max - min);
+  const W = 320;
+  const H = 92;
+  const x = (i) => 18 + (i * (W - 36)) / (pts.length - 1);
+  const y = (t) => 28 + (1 - (t - min) / span) * 38;
+  const path = pts.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.t).toFixed(1)}`).join(" ");
+
+  return `<div class="wx-chart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="อุณหภูมิ 24 ชั่วโมงข้างหน้า">
+    <path d="${path}" fill="none" stroke="#5b5142" stroke-width="1.6"/>
+    ${pts
+      .map(
+        (p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.t).toFixed(1)}" r="3" fill="#33291c"/>
+      <text x="${x(i).toFixed(1)}" y="${(y(p.t) - 9).toFixed(1)}" text-anchor="middle" font-size="10.5" font-family="IBM Plex Mono, monospace" fill="#33291c">${Math.round(p.t)}°</text>
+      <text x="${x(i).toFixed(1)}" y="${H - 6}" text-anchor="middle" font-size="9.5" font-family="IBM Plex Mono, monospace" fill="#94886f">${String(p.h).padStart(2, "0")}</text>`
+      )
+      .join("")}
+  </svg></div>`;
+}
+
 export default {
   id: "weather",
   name: "Weather",
   icon: "⛅",
-  defaultSize: { w: 390, h: 540 },
+  defaultSize: { w: 410, h: 660 },
   mount(body) {
     body.classList.add("app-pane", "app-weather");
     let loc = load("weather.loc", DEFAULT_LOC);
@@ -63,24 +100,43 @@ export default {
       const c = data.current;
       const now = describe(c.weather_code);
       const d = data.daily;
+
+      // สเกลร่วมทั้งสัปดาห์ — pill ของแต่ละวันวางบนแกน min→max เดียวกันแบบ Acme
+      const weekMin = Math.min(...d.temperature_2m_min);
+      const weekMax = Math.max(...d.temperature_2m_max);
+      const weekSpan = Math.max(1, weekMax - weekMin);
+
+      const chart = hourlyChart(data.hourly);
+
       main.innerHTML = `
+        <h2 class="wx-serif">Right Now</h2>
         <div class="wx-now">
           <span class="emoji">${now.e}</span>
           <div>
             <div class="t">${Math.round(c.temperature_2m)}°</div>
             <div class="desc">${now.t} · รู้สึกเหมือน ${Math.round(c.apparent_temperature)}°</div>
-            <div class="wx-meta">ความชื้น ${c.relative_humidity_2m}% · ลม ${Math.round(c.wind_speed_10m)} กม./ชม.</div>
+            <div class="wx-meta">สูงสุด ${Math.round(d.temperature_2m_max[0])}° ต่ำสุด ${Math.round(d.temperature_2m_min[0])}° · ความชื้น ${c.relative_humidity_2m}% · ลม ${Math.round(c.wind_speed_10m)} กม./ชม.</div>
           </div>
         </div>
+        ${chart ? `<h2 class="wx-serif">Next 24 Hours</h2>${chart}` : ""}
+        <h2 class="wx-serif">Next 6 Days</h2>
         <div class="wx-days">
           ${d.time
             .map((t, i) => {
               const w = describe(d.weather_code[i]);
               const day = i === 0 ? "วันนี้" : DAY_TH[new Date(t).getDay()];
+              const lo = d.temperature_2m_min[i];
+              const hi = d.temperature_2m_max[i];
+              const left = ((lo - weekMin) / weekSpan) * 100;
+              const width = Math.max(8, ((hi - lo) / weekSpan) * 100);
               return `<div class="wx-day">
-                <span class="d">${day}</span><span>${w.e}</span>
-                <span class="rain">☔ ${d.precipitation_probability_max[i] ?? 0}%</span>
-                <span class="range">${Math.round(d.temperature_2m_min[i])}°–${Math.round(d.temperature_2m_max[i])}°</span>
+                <span class="d">${day}</span><span class="e">${w.e}</span>
+                <span class="rain">💧${d.precipitation_probability_max[i] ?? 0}%</span>
+                <span class="wx-range">
+                  <span class="lo">${Math.round(lo)}°</span>
+                  <span class="track"><span class="pill" style="left:${left.toFixed(1)}%;width:${width.toFixed(1)}%"></span></span>
+                  <span class="hi">${Math.round(hi)}°</span>
+                </span>
               </div>`;
             })
             .join("")}
