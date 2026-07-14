@@ -4,7 +4,7 @@ import { DEFAULT_LOC, describe, fetchForecast } from "./weather.js";
 // หน้า Me — แดชบอร์ดชีวิตวันนี้ อ่านข้อมูลจากทุกแอปมารวมในจอเดียว
 // ทุกการ์ดกดแล้วกระโดดไปแท็บที่ลึกกว่าได้ (ยิง event ให้ shell จัดการ)
 
-const GOAL = { water: 8, ex: 45, sleep: 8 };
+const GOAL = { water: 8, ex: 45, sleep: 8, steps: 8000 };
 const RING_C = 2 * Math.PI * 22; // r=22 ใน viewBox 52
 const fmt = (n) => n.toLocaleString("th-TH", { maximumFractionDigits: 0 });
 
@@ -82,6 +82,7 @@ export default {
       const undone = todos.filter((x) => !x.done);
       const streak = streakOf(days);
       const logged = [t.water > 0, t.ex > 0, t.sleep > 0, t.weight != null, t.mood != null].filter(Boolean).length;
+      const hasApple = !!load("health.lastImport");
 
       body.innerHTML = `
         <header class="me-head">
@@ -99,11 +100,18 @@ export default {
             <span class="mc-more">${logged}/5 ครบ ›</span>
           </div>
           <div class="minis">
-            ${miniRing("sleep", t.sleep / GOAL.sleep, "นอน", `${t.sleep || 0}`)}
-            ${miniRing("water", t.water / GOAL.water, "น้ำ", `${t.water || 0}`)}
-            ${miniRing("ex", t.ex / GOAL.ex, "ออกกำลัง", `${t.ex || 0}`)}
+            ${miniRing("sleep", (t.sleep ?? 0) / GOAL.sleep, "นอน", `${t.sleep || 0}`)}
+            ${
+              // ถ้ามีข้อมูลก้าวจาก Apple Health ให้โชว์ก้าวแทนน้ำ (แม่นกว่า และ PP ไม่ต้องกรอกเอง)
+              t.steps > 0
+                ? miniRing("steps", t.steps / GOAL.steps, "ก้าว", `${Math.round(t.steps / 100) / 10}k`)
+                : miniRing("water", (t.water ?? 0) / GOAL.water, "น้ำ", `${t.water || 0}`)
+            }
+            ${miniRing("ex", (t.ex ?? 0) / GOAL.ex, "ออกกำลัง", `${t.ex || 0}`)}
           </div>
-          <div class="streak">${streak > 0 ? `🔥 บันทึกต่อเนื่อง ${streak} วัน` : "ยังไม่ได้เริ่ม streak — บันทึกวันนี้เลย"}</div>
+          <div class="streak">${
+            streak > 0 ? `🔥 บันทึกต่อเนื่อง ${streak} วัน` : "ยังไม่ได้เริ่ม streak — บันทึกวันนี้เลย"
+          }${hasApple ? " · ⌚ ซิงก์จาก Apple Health" : ""}</div>
         </button>
 
         <div class="me-duo">

@@ -236,6 +236,10 @@ button.me-card:active {
   stroke: #38d6e3;
 }
 
+.mini.steps .val {
+  stroke: #f0b429;
+}
+
 .mini .c {
   position: absolute;
   inset: 0;
@@ -511,7 +515,8 @@ button.me-card:active {
 .h-top {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
+  gap: 10px;
 }
 
 .h-brand {
@@ -524,6 +529,191 @@ button.me-card:active {
 .h-date {
   font-size: 12.5px;
   color: var(--h-muted);
+  margin-top: 2px;
+}
+
+.h-import {
+  flex-shrink: 0;
+  border: 1px solid rgba(47, 210, 135, 0.35);
+  background: rgba(47, 210, 135, 0.1);
+  color: var(--h-green);
+  border-radius: 10px;
+  padding: 7px 11px;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.h-import:active {
+  background: rgba(47, 210, 135, 0.2);
+}
+
+.h-src {
+  font-size: 11.5px;
+  color: var(--h-muted);
+  border-top: 1px solid var(--h-border);
+  padding-top: 10px;
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* ---- ชีตนำเข้า Apple Health ----
+   ต้องเป็น fixed ไม่ใช่ absolute: pane ของ Health สูงกว่าจอ (เลื่อนได้)
+   absolute inset:0 จะกางเต็ม "ความสูงของเนื้อหา" แล้วการ์ดไปโผล่ท้ายสุดที่มองไม่เห็น */
+.hk-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  padding: 16px;
+}
+
+/* บนมือถือชีตเด้งจากขอบล่างแบบ native */
+body.mode-app .hk-sheet {
+  align-items: flex-end;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.hk-card {
+  width: 100%;
+  max-width: 460px;
+  max-height: 88%;
+  overflow-y: auto;
+  border: 1px solid var(--h-border);
+  border-radius: 18px;
+  background: #11171c;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  animation: hk-up 0.22s ease-out;
+}
+
+@keyframes hk-up {
+  from {
+    transform: translateY(18px);
+    opacity: 0;
+  }
+}
+
+.hk-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-head);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.hk-x {
+  border: 0;
+  background: transparent;
+  color: var(--h-muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+.hk-p {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--h-muted);
+}
+
+.hk-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 16px;
+  border: 1.5px dashed rgba(47, 210, 135, 0.45);
+  border-radius: 14px;
+  background: rgba(47, 210, 135, 0.06);
+  cursor: pointer;
+  text-align: center;
+}
+
+.hk-drop b {
+  font-family: var(--font-head);
+  font-size: 14.5px;
+  color: var(--h-green);
+}
+
+.hk-drop small {
+  font-size: 11.5px;
+  color: var(--h-muted);
+}
+
+.hk-status:empty {
+  display: none;
+}
+
+.hk-status {
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre-line;
+  border-radius: 10px;
+  padding: 9px 11px;
+  background: var(--h-card);
+  border: 1px solid var(--h-border);
+}
+
+.hk-status.ok {
+  border-color: rgba(47, 210, 135, 0.45);
+  color: var(--h-green);
+}
+
+.hk-status.err {
+  border-color: rgba(229, 72, 77, 0.5);
+  color: #ff8177;
+}
+
+.hk-how summary {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 9px 0;
+  border-top: 1px solid var(--h-border);
+}
+
+.hk-how ol {
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--h-muted);
+  margin-bottom: 8px;
+}
+
+.hk-how li b {
+  color: var(--h-text);
+}
+
+.hk-how p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--h-muted);
+  margin-bottom: 6px;
+}
+
+.hk-how code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 5px;
+  padding: 1px 5px;
+  color: var(--h-text);
+  word-break: break-all;
 }
 
 .rings {
@@ -652,12 +842,12 @@ button.me-card:active {
   font-weight: 500;
 }
 
-.h-chip.mon.ok {
+.h-chip.ok {
   border-color: rgba(47, 210, 135, 0.45);
   color: var(--h-green);
 }
 
-.h-chip.mon.ok b {
+.h-chip.ok b {
   color: var(--h-green);
 }
 
@@ -700,6 +890,14 @@ button.me-card:active {
 
 .app-health .trend-head .cap {
   color: var(--h-muted);
+}
+
+.app-health .trend[data-m="steps"] .bar {
+  background: rgba(240, 180, 41, 0.3);
+}
+
+.app-health .trend[data-m="steps"] .bar.today {
+  background: #f0b429;
 }
 
 .app-health .trend[data-m="water"] .bar {

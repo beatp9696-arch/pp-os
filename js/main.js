@@ -7,6 +7,7 @@ import { register, allApps, getApp } from "./core/app-registry.js";
 import { openApp } from "./core/window-manager.js";
 import { initTaskbar } from "./core/taskbar.js";
 import { initShell } from "./core/app-shell.js";
+import { importFromURL } from "./core/apple-health.js";
 import { load, save } from "./core/storage.js";
 
 import me from "./apps/me.js";
@@ -18,6 +19,9 @@ import todo from "./apps/todo.js";
 import calculator from "./apps/calculator.js";
 
 [me, health, money, weather, notes, todo, calculator].forEach(register);
+
+// Shortcut ยิงข้อมูลสุขภาพมาทาง ?hk=<base64> — เขียนลง storage ก่อนแอปเริ่มวาด
+importFromURL();
 
 const params = new URLSearchParams(location.search);
 const auto =

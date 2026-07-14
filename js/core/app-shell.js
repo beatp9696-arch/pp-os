@@ -126,6 +126,11 @@ function renderMore() {
     </div>
     <div class="more-sec">ตั้งค่า</div>
     <div class="more-list">
+      <button class="more-row" data-act="hk">
+        <span class="mr-ico">⌚</span>
+        <span class="mr-txt"><b>เชื่อมกับ Apple Health</b><small>ดึงก้าว/นอน/ออกกำลังกาย จากแอปสุขภาพ ไม่ต้องกรอกเอง</small></span>
+        <span class="mr-chev">${ICONS.chev}</span>
+      </button>
       <div class="more-row static">
         <span class="mr-ico">🙂</span>
         <span class="mr-txt"><b>ชื่อ</b><small>${name || "ยังไม่ได้ตั้ง — ตั้งได้ที่หน้า Me"}</small></span>
@@ -148,6 +153,10 @@ function renderMore() {
   for (const row of pane.querySelectorAll("[data-app]")) {
     row.addEventListener("click", () => openSub(row.dataset.app));
   }
+  pane.querySelector('[data-act="hk"]').addEventListener("click", () => {
+    goTab("health"); // ชีตนำเข้าอยู่ในแอป Health — เด้งไปแล้วสั่งเปิดให้เลย
+    document.dispatchEvent(new CustomEvent("pp-hk-open"));
+  });
   pane.querySelector('[data-act="desktop"]').addEventListener("click", () => {
     save("os.mode", "desktop");
     location.replace(location.pathname);

@@ -1,14 +1,16 @@
 import { load, save } from "../core/storage.js";
+import { parseAppleExport, parseHealthJSON, mergeDays } from "../core/apple-health.js";
 
 const MOODS = ["😫", "😕", "😐", "🙂", "😄"];
 const METRICS = [
+  { m: "steps", ico: "👟", lbl: "ก้าว", step: 500 },
   { m: "water", ico: "💧", lbl: "น้ำดื่ม (แก้ว)", step: 1 },
   { m: "ex", ico: "🏃", lbl: "ออกกำลังกาย (นาที)", step: 10 },
   { m: "sleep", ico: "😴", lbl: "นอน (ชั่วโมง)", step: 0.5 },
 ];
 
 // เป้าประจำวัน — ใช้คำนวณ % ของวงแหวน
-const GOAL = { water: 8, ex: 45, sleep: 8 };
+const GOAL = { steps: 8000, water: 8, ex: 45, sleep: 8 };
 const RING_C = 2 * Math.PI * 35; // เส้นรอบวง r=35 ใน viewBox 84
 
 // key เป็นวันที่ local ไม่ใช่ UTC — ตีสองบ้านเรายังต้องนับเป็นวันนี้
@@ -35,7 +37,7 @@ function ringHTML(id, color, name) {
 // insight แบบ WHOOP — อ่านข้อมูลวันนี้แล้วสรุปว่าร่างกายพร้อมแค่ไหน
 function insight(t, logged) {
   if (!logged) {
-    return { t: "เริ่มวันนี้", d: "ยังไม่มีข้อมูลวันนี้ — เริ่มจากบันทึกชั่วโมงนอนเมื่อคืน แล้วค่อยเติมน้ำดื่มกับการออกกำลังกายระหว่างวัน" };
+    return { t: "เริ่มวันนี้", d: "ยังไม่มีข้อมูลวันนี้ — นำเข้าจาก Apple Health ได้เลย (ปุ่มมุมขวาบน) หรือกรอกเองด้านล่าง" };
   }
   if (t.sleep > 0 && t.sleep < 6) {
     return { t: "ต้องการการพักฟื้น", warn: true, d: `เมื่อคืนนอน ${t.sleep} ชม. ต่ำกว่าเป้า 8 ชม. — วันนี้ผ่อน strain ลงหน่อย แล้วพยายามเข้านอนให้เร็วขึ้น` };
@@ -46,23 +48,74 @@ function insight(t, logged) {
   if (t.ex >= GOAL.ex) {
     return { t: "STRAIN ถึงเป้าแล้ว", d: `ออกกำลังกายครบ ${t.ex} นาที — ที่เหลือของวันนี้คือดื่มน้ำให้ครบ ${GOAL.water} แก้ว แล้วนอนให้พอเพื่อ recovery พรุ่งนี้` };
   }
+  if (t.steps >= GOAL.steps) {
+    return { t: "เดินถึงเป้าแล้ว", d: `${t.steps.toLocaleString("th-TH")} ก้าววันนี้ — เกินเป้า ${GOAL.steps.toLocaleString("th-TH")} ก้าว ร่างกายได้ขยับพอแล้ว` };
+  }
   return { t: "KEEP BUILDING", d: "บันทึกให้ครบทุกตัวชี้วัด แล้วภาพรวมสุขภาพของวันนี้จะชัดขึ้น — ความสม่ำเสมอสำคัญกว่าความหนัก" };
 }
+
+const SHEET = `
+  <div class="hk-sheet hidden">
+    <div class="hk-card">
+      <div class="hk-h">
+        <span>⌚ นำเข้าจาก Apple Health</span>
+        <button class="hk-x" title="ปิด">✕</button>
+      </div>
+      <p class="hk-p">เว็บอ่าน Apple Health ตรงๆ ไม่ได้ (Apple เปิดให้เฉพาะแอป native) — แต่เลือกไฟล์เข้ามาได้ ข้อมูลถูกอ่านในเครื่องนี้เท่านั้น ไม่ถูกอัปโหลดไปไหน</p>
+
+      <label class="hk-drop">
+        <input type="file" accept=".zip,.xml,.json" class="hk-file" hidden>
+        <b>เลือกไฟล์</b>
+        <small>export.zip จากแอปสุขภาพ · หรือ .json จาก Shortcut</small>
+      </label>
+      <div class="hk-status"></div>
+
+      <details class="hk-how">
+        <summary>วิธีที่ 1 — ดึงย้อนหลังทั้งหมด (ทำครั้งเดียว ~2 นาที)</summary>
+        <ol>
+          <li>เปิดแอป <b>สุขภาพ</b> บน iPhone → แตะรูปโปรไฟล์มุมขวาบน</li>
+          <li>เลื่อนลงสุด → <b>ส่งออกข้อมูลสุขภาพทั้งหมด</b> → รอสักครู่</li>
+          <li>เลือก <b>บันทึกไปยังไฟล์</b> (ได้ไฟล์ <code>ส่งออก.zip</code> / <code>export.zip</code>)</li>
+          <li>กลับมาที่นี่ → <b>เลือกไฟล์</b> → เลือก zip นั้น</li>
+        </ol>
+        <p>ได้: ก้าว, ออกกำลังกาย, การนอน, น้ำดื่ม, น้ำหนัก ย้อนหลังสูงสุด 400 วัน</p>
+      </details>
+
+      <details class="hk-how">
+        <summary>วิธีที่ 2 — อัปเดตอัตโนมัติทุกวัน (Shortcut)</summary>
+        <ol>
+          <li>เปิดแอป <b>Shortcuts</b> → สร้าง Shortcut ใหม่</li>
+          <li>ใส่ action <b>Find Health Samples</b> ของแต่ละอย่างที่ต้องการ (Steps / Exercise Minutes / Sleep / Water / Weight) กรอง <i>Today</i> แล้ว <b>Calculate Statistics → Sum</b></li>
+          <li>ใส่ action <b>Text</b> พิมพ์ JSON แบบนี้ (ลากตัวแปรจากขั้นก่อนหน้ามาแทนตัวเลข):<br>
+            <code>{"days":{"YYYY-MM-DD":{"steps":8210,"ex":30,"sleep":7.5,"water":6,"weight":70.5}}}</code></li>
+          <li>ปิดท้ายด้วย <b>Save File</b> → บันทึกทับไฟล์เดิมใน iCloud Drive ชื่อ <code>pp-health.json</code></li>
+          <li>ตั้ง <b>Automation</b> ให้รันทุกวันตอน 4 ทุ่ม — แล้ววันไหนอยากอัปเดตก็มากด "เลือกไฟล์" → เลือก pp-health.json</li>
+        </ol>
+        <p>ถ้าใช้ผ่าน Safari (ไม่ได้ติดตั้งเป็นแอป) ให้ Shortcut สั่ง <b>Open URL</b> ไปที่<br>
+          <code>…/pp-os/?hk=&lt;JSON ที่เข้ารหัส Base64&gt;</code> — เปิดปุ๊บข้อมูลเข้าเองทันที ไม่ต้องเลือกไฟล์</p>
+      </details>
+    </div>
+  </div>
+`;
 
 export default {
   id: "health",
   name: "Health",
   icon: "❤️",
-  defaultSize: { w: 410, h: 700 },
+  defaultSize: { w: 430, h: 720 },
   mount(body) {
     body.classList.add("app-pane", "app-health");
     const days = load("health.days", {});
-    const today = () => (days[dayKey()] ??= { water: 0, ex: 0, sleep: 0, weight: null, mood: null });
+    const today = () => (days[dayKey()] ??= { steps: 0, water: 0, ex: 0, sleep: 0, weight: null, mood: null });
+    const val = (rec, m) => rec?.[m] ?? 0; // วันเก่าที่บันทึกไว้ก่อนมี steps จะไม่มี key นี้
 
     body.innerHTML = `
       <div class="h-top">
-        <span class="h-brand">PP · HEALTH</span>
-        <span class="h-date">${new Date().toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" })}</span>
+        <div>
+          <div class="h-brand">PP · HEALTH</div>
+          <div class="h-date">${new Date().toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" })}</div>
+        </div>
+        <button class="h-import">⌚ Apple Health</button>
       </div>
       <div class="rings">
         ${ringHTML("sleep", "blue", "SLEEP")}
@@ -72,6 +125,7 @@ export default {
       <div class="h-insight"><div class="t"></div><div class="d"></div></div>
       <div class="h-chips">
         <span class="h-chip mon">✓ HEALTH MONITOR <b></b></span>
+        <span class="h-chip steps">👟 ก้าว <b></b></span>
         <span class="h-chip">💧 น้ำดื่ม <b></b></span>
       </div>
       <h3>บันทึกวันนี้</h3>
@@ -100,6 +154,8 @@ export default {
           <div class="bars"></div>
         </div>`
       ).join("")}
+      <div class="h-src"></div>
+      ${SHEET}
     `;
 
     const persist = () => save("health.days", days);
@@ -115,14 +171,14 @@ export default {
     const update = () => {
       const t = today();
 
-      const sleepFrac = t.sleep / GOAL.sleep;
-      setRing("sleep", sleepFrac, `${Math.round(sleepFrac * 100)}%`, `${t.sleep} ชม.`);
+      const sleepFrac = val(t, "sleep") / GOAL.sleep;
+      setRing("sleep", sleepFrac, `${Math.round(sleepFrac * 100)}%`, `${val(t, "sleep")} ชม.`);
       if (t.mood == null) setRing("rec", 0, "—", "ยังไม่เลือกอารมณ์");
       else setRing("rec", (t.mood + 1) / 5, `${(t.mood + 1) * 20}%`, MOODS[t.mood]);
-      setRing("strain", t.ex / GOAL.ex, `${t.ex}`, `นาที / เป้า ${GOAL.ex}`);
+      setRing("strain", val(t, "ex") / GOAL.ex, `${val(t, "ex")}`, `นาที / เป้า ${GOAL.ex}`);
 
-      const logged = [t.water > 0, t.ex > 0, t.sleep > 0, t.weight != null, t.mood != null].filter(Boolean).length;
-      const ins = insight(t, logged);
+      const logged = [val(t, "water") > 0, val(t, "ex") > 0, val(t, "sleep") > 0, t.weight != null, t.mood != null].filter(Boolean).length;
+      const ins = insight({ ...t, steps: val(t, "steps"), sleep: val(t, "sleep"), ex: val(t, "ex") }, logged);
       const card = body.querySelector(".h-insight");
       card.classList.toggle("warn", !!ins.warn);
       card.querySelector(".t").textContent = ins.t;
@@ -131,10 +187,14 @@ export default {
       const mon = body.querySelector(".h-chip.mon");
       mon.classList.toggle("ok", logged >= 4);
       mon.querySelector("b").textContent = `${logged}/5 METRICS`;
-      body.querySelector(".h-chip:not(.mon) b").textContent = `${t.water}/${GOAL.water} แก้ว`;
+      const stepsChip = body.querySelector(".h-chip.steps");
+      stepsChip.classList.toggle("ok", val(t, "steps") >= GOAL.steps);
+      stepsChip.querySelector("b").textContent = `${val(t, "steps").toLocaleString("th-TH")} / ${GOAL.steps.toLocaleString("th-TH")}`;
+      body.querySelector(".h-chips .h-chip:last-child b").textContent = `${val(t, "water")}/${GOAL.water} แก้ว`;
 
       for (const { m } of METRICS) {
-        body.querySelector(`.step-row[data-m="${m}"] .val`).textContent = t[m];
+        body.querySelector(`.step-row[data-m="${m}"] .val`).textContent =
+          m === "steps" ? val(t, m).toLocaleString("th-TH") : val(t, m);
       }
       body.querySelector(".weight-input").value = t.weight ?? "";
       body.querySelectorAll(".mood button").forEach((b) => {
@@ -147,7 +207,7 @@ export default {
         const vals = [];
         for (let off = 6; off >= 0; off--) {
           const rec = days[dayKey(off)];
-          vals.push({ key: dayKey(off), v: rec ? rec[m] || 0 : null });
+          vals.push({ key: dayKey(off), v: rec ? val(rec, m) : null });
         }
         const max = Math.max(1, ...vals.map((x) => x.v ?? 0));
         barsEl.innerHTML = vals
@@ -158,8 +218,13 @@ export default {
           .join("");
         const logged7 = vals.filter((x) => x.v !== null);
         const avg = logged7.length ? Math.round((logged7.reduce((s, x) => s + x.v, 0) / logged7.length) * 10) / 10 : 0;
-        trend.querySelector(".cap").textContent = `วันนี้ ${t[m]} · เฉลี่ย ${avg}`;
+        trend.querySelector(".cap").textContent = `วันนี้ ${val(t, m).toLocaleString("th-TH")} · เฉลี่ย ${avg.toLocaleString("th-TH")}`;
       }
+
+      const last = load("health.lastImport");
+      body.querySelector(".h-src").textContent = last
+        ? `⌚ นำเข้าจาก Apple Health ล่าสุด ${new Date(last.at).toLocaleString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · ${last.days} วัน`
+        : "ยังไม่เคยนำเข้าจาก Apple Health — กดปุ่ม ⌚ มุมขวาบนเพื่อเลิกกรอกมือ";
     };
 
     body.addEventListener("click", (e) => {
@@ -168,7 +233,7 @@ export default {
         const row = stepBtn.closest(".step-row");
         const { m } = row.dataset;
         const { step } = METRICS.find((x) => x.m === m);
-        const next = today()[m] + step * Number(stepBtn.dataset.d);
+        const next = val(today(), m) + step * Number(stepBtn.dataset.d);
         today()[m] = Math.max(0, Math.round(next * 10) / 10);
         persist();
         update();
@@ -186,6 +251,51 @@ export default {
       today().weight = Number.isFinite(v) && v > 0 ? v : null;
       persist();
       update();
+    });
+
+    // ---- Apple Health import ----
+    const sheet = body.querySelector(".hk-sheet");
+    const status = body.querySelector(".hk-status");
+    const openSheet = () => sheet.classList.remove("hidden");
+
+    body.querySelector(".h-import").addEventListener("click", openSheet);
+    body.querySelector(".hk-x").addEventListener("click", () => sheet.classList.add("hidden"));
+    sheet.addEventListener("click", (e) => {
+      if (e.target === sheet) sheet.classList.add("hidden");
+    });
+    // More > "เชื่อมกับ Apple Health" เด้งมาที่แท็บนี้แล้วสั่งเปิดชีตให้เลย
+    const onOpenReq = () => body.isConnected && openSheet();
+    document.addEventListener("pp-hk-open", onOpenReq);
+
+    body.querySelector(".hk-file").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      e.target.value = "";
+      status.className = "hk-status busy";
+      status.textContent = "กำลังอ่านไฟล์…";
+
+      try {
+        const imported = file.name.endsWith(".json")
+          ? parseHealthJSON(await file.text())
+          : await parseAppleExport(file, ({ mb, records }) => {
+              status.textContent = `กำลังอ่าน ${mb.toFixed(1)} MB · ${records.toLocaleString("th-TH")} รายการ…`;
+            });
+
+        const res = mergeDays(imported);
+        // days ใน closure เป็นสำเนาเก่า — ต้องดึงของใหม่ที่ merge แล้วมาทับ
+        Object.assign(days, load("health.days", {}));
+
+        status.className = "hk-status ok";
+        const got = Object.entries(res.filled)
+          .filter(([, n]) => n > 0)
+          .map(([k, n]) => `${{ steps: "ก้าว", water: "น้ำ", ex: "ออกกำลัง", sleep: "นอน", weight: "น้ำหนัก" }[k]} ${n} วัน`)
+          .join(" · ");
+        status.textContent = `✓ นำเข้า ${res.days} วัน (${res.from} → ${res.to})\n${got || "ไม่พบตัวชี้วัดที่รองรับในไฟล์นี้"}`;
+        update();
+      } catch (err) {
+        status.className = "hk-status err";
+        status.textContent = `นำเข้าไม่สำเร็จ — ${err.message}`;
+      }
     });
 
     update();
