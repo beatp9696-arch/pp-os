@@ -1,30 +1,37 @@
 #taskbar {
-  height: var(--taskbar-h);
+  height: calc(var(--taskbar-h) + env(safe-area-inset-bottom, 0px));
+  padding: 0 10px env(safe-area-inset-bottom, 0px);
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 10px;
-  background: rgba(13, 18, 30, 0.85);
+  background: var(--surface-glass);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--border);
 }
 
 #start-btn {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   border: 0;
-  border-radius: 9px;
-  background: var(--accent);
-  color: #0b101c;
-  font-size: 17px;
-  font-weight: 700;
+  border-radius: 10px;
+  background: transparent;
   cursor: pointer;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#start-btn img {
+  width: 30px;
+  height: 30px;
+  display: block;
 }
 
 #start-btn:hover {
-  filter: brightness(1.1);
+  background: var(--accent-tint);
 }
 
 #task-buttons {
@@ -38,29 +45,32 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  padding: 6px 12px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--text-dim);
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--muted);
   cursor: pointer;
+  font-family: var(--font-head);
   font-size: 13px;
+  font-weight: 600;
   white-space: nowrap;
 }
 
 .task-btn:hover {
-  background: rgba(255, 255, 255, 0.11);
+  background: var(--accent-tint);
 }
 
 .task-btn.active {
-  background: rgba(94, 160, 255, 0.18);
-  border-color: rgba(94, 160, 255, 0.35);
-  color: var(--text);
+  background: var(--accent-tint);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  color: var(--accent-strong);
 }
 
 #clock {
+  font-family: var(--font-mono);
   font-size: 13px;
-  color: var(--text-dim);
+  color: var(--muted);
   padding: 0 8px;
   font-variant-numeric: tabular-nums;
 }
@@ -68,15 +78,13 @@
 #start-menu {
   position: fixed;
   left: 8px;
-  bottom: calc(var(--taskbar-h) + 8px);
+  bottom: calc(var(--taskbar-h) + env(safe-area-inset-bottom, 0px) + 8px);
   min-width: 230px;
   padding: 8px;
-  border-radius: 14px;
-  background: var(--panel);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--line);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -89,15 +97,18 @@
   gap: 12px;
   padding: 10px 12px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 10px;
   background: transparent;
   cursor: pointer;
+  font-family: var(--font-head);
   font-size: 14px;
+  font-weight: 600;
   text-align: left;
 }
 
 .menu-item:hover {
-  background: rgba(255, 255, 255, 0.09);
+  background: var(--accent-tint);
+  color: var(--accent-strong);
 }
 
 .menu-item .glyph {

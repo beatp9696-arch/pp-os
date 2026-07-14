@@ -1,6 +1,9 @@
 # PP OS
 
-Web OS ในเบราว์เซอร์ — desktop, หน้าต่างลาก/ย่อ/focus ได้, taskbar + start menu, แอปย่่อยข้างใน เขียนด้วย vanilla JS (ES modules) ไม่มี build step
+Web OS ในเบราว์เซอร์ — desktop, หน้าต่างลาก/ย่อ/focus ได้, taskbar + start menu, แอปย่อยข้างใน เขียนด้วย vanilla JS (ES modules) ไม่มี build step
+
+- **Design identity เดียวกับเว็บ [Moatrices](https://beatp9696-arch.github.io/)** — โทเคนสี/ฟอนต์ยกมาจาก `style.css` ของเว็บ (IBM Plex Sans Thai + Sarabun + IBM Plex Mono, เขียว `#0c6b52`/`#4ecaa0`) รองรับ light/dark ตามระบบ
+- **PWA ติดตั้งบนมือถือได้** — manifest + service worker precache ทั้ง shell ใช้ offline ได้ บนจอ ≤700px หน้าต่างเปิดเต็มจอแบบแอปมือถือ
 
 ## รันยังไง
 
@@ -18,7 +21,11 @@ Deep link เปิดแอปอัตโนมัติ: `http://localhost:80
 
 ```
 index.html              # shell: desktop + taskbar
+manifest.webmanifest    # PWA manifest (ติดตั้งบนมือถือ)
+sw.js                   # service worker — เพิ่ม/แก้ไฟล์เมื่อไหร่ต้อง bump VERSION + อัปเดต SHELL list
 css/                    # base / desktop / window / taskbar / apps
+assets/fonts/           # self-hosted fonts ชุดเดียวกับเว็บ Moatrices
+assets/icons/           # โลโก้ Moatrices + PWA icons
 js/
 ├── main.js             # boot: ลงทะเบียนแอป, วาด icons, start taskbar
 ├── core/

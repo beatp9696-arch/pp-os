@@ -28,3 +28,8 @@ if (auto) {
     if (app) openApp(app);
   }
 }
+
+// PWA: ให้ติดตั้งบนมือถือ + ใช้ offline ได้
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js");
+}
