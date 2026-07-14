@@ -1,0 +1,73 @@
+#desktop {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(1200px 700px at 75% 20%, rgba(94, 160, 255, 0.16), transparent 60%),
+    radial-gradient(900px 600px at 15% 85%, rgba(57, 208, 184, 0.1), transparent 60%),
+    linear-gradient(160deg, #0d1322 0%, #101a2e 55%, #0b101c 100%);
+}
+
+#desktop::after {
+  content: "PP OS";
+  position: absolute;
+  right: 34px;
+  bottom: 22px;
+  font-size: 92px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: rgba(255, 255, 255, 0.045);
+  pointer-events: none;
+  user-select: none;
+}
+
+#icons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px;
+  width: max-content;
+}
+
+.desk-icon {
+  width: 88px;
+  padding: 12px 6px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.desk-icon:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.desk-icon:active {
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.desk-icon .glyph {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.desk-icon .label {
+  font-size: 12px;
+  color: #dbe4f5;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* ชั้นวางหน้าต่าง — โปร่งให้คลิก icon ทะลุได้ ยกเว้นตัวหน้าต่างเอง */
+#windows {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+#windows .window {
+  pointer-events: auto;
+}

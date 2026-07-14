@@ -1,0 +1,73 @@
+/* ---- Notes ---- */
+.app-notes {
+  display: flex;
+}
+
+.app-notes textarea {
+  flex: 1;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  padding: 14px 16px;
+  font: inherit;
+  line-height: 1.6;
+}
+
+.app-notes textarea::placeholder {
+  color: var(--text-dim);
+}
+
+/* ---- Calculator ---- */
+.app-calc {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  gap: 10px;
+}
+
+.calc-display {
+  flex: 0 0 64px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  font-size: 34px;
+  font-weight: 600;
+  padding: 6px 10px;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-keys {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.calc-key {
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.calc-key:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.calc-key:active {
+  transform: scale(0.96);
+}
+
+.calc-key.op {
+  background: var(--accent);
+  color: #0b101c;
+  font-weight: 700;
+}
+
+.calc-key.zero {
+  grid-column: span 2;
+}

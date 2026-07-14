@@ -1,0 +1,86 @@
+.window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  min-height: 140px;
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  animation: win-open 0.18s ease-out;
+}
+
+.window.focused {
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 20px 64px rgba(0, 0, 0, 0.6);
+}
+
+.window.minimized {
+  display: none;
+}
+
+@keyframes win-open {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(10px);
+  }
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 8px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--line);
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none; /* จำเป็นสำหรับลากด้วย pointer events บนจอทัช */
+}
+
+.window.dragging .titlebar {
+  cursor: grabbing;
+}
+
+.titlebar .title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.controls {
+  display: flex;
+  gap: 4px;
+}
+
+.win-btn {
+  width: 26px;
+  height: 24px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.win-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+.win-btn.win-close:hover {
+  background: #e5484d;
+  color: #fff;
+}
+
+.win-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
