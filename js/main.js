@@ -51,7 +51,7 @@ function initDesktop() {
   const widget = document.createElement("div");
   widget.id = "desk-widget";
   widget.innerHTML = `<div class="dw-greet"></div><div class="dw-time"></div><div class="dw-date"></div>
-    <button class="dw-mode">สลับเป็นโหมดแอป →</button>`;
+    <button class="dw-mode">Switch to app mode →</button>`;
   document.getElementById("desktop").append(widget);
 
   widget.querySelector(".dw-mode").addEventListener("click", () => {
@@ -63,13 +63,12 @@ function initDesktop() {
     const now = new Date();
     const h = now.getHours();
     widget.querySelector(".dw-greet").textContent =
-      h < 5 ? "ดึกแล้ว นอนได้แล้วนะ" : h < 12 ? "สวัสดีตอนเช้า ☀️" : h < 17 ? "สวัสดีตอนบ่าย" : h < 21 ? "สวัสดีตอนเย็น" : "ค่ำแล้ว พักผ่อนบ้างนะ";
-    widget.querySelector(".dw-time").textContent = now.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
-    widget.querySelector(".dw-date").textContent = now.toLocaleDateString("th-TH", {
+      h < 5 ? "Still up?" : h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : h < 21 ? "Good evening" : "Winding down";
+    widget.querySelector(".dw-time").textContent = now.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    widget.querySelector(".dw-date").textContent = now.toLocaleDateString("en-US", {
       weekday: "long",
-      day: "numeric",
       month: "long",
-      year: "numeric",
+      day: "numeric",
     });
   };
   tickWidget();

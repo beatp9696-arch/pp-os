@@ -9,7 +9,8 @@
 
 สลับโหมดได้สองทาง (ปุ่มใต้นาฬิกาบน desktop / More ในแอป) หรือบังคับด้วย `?mode=app|desktop`
 
-- **Design identity เดียวกับเว็บ [Moatrices](https://beatp9696-arch.github.io/)** — โทเคนสี/ฟอนต์ยกมาจาก `style.css` ของเว็บ; แต่ละแอปมี palette ของตัวเอง (Health = จอดำ WHOOP, Weather = กระดาษครีม Acme, Money = ดำ-เขียวมะนาว FinTrack) แถบแท็บล่างเปลี่ยนโทนตามแอปที่เปิดอยู่
+- **UI เป็นภาษาอังกฤษล้วน** (14 ก.ค. 2026) — ฟอนต์ Inter (variable, self-hosted) + Instrument Serif เฉพาะหัวเรื่อง Weather + IBM Plex Mono เฉพาะ eyebrow/label เครื่องมือ
+- **Design system ชั้นเดียว** — component (`.card` / `.page-head` / `.chip` / `.seg` / `.list` / `.btn`) นิยามครั้งเดียวใน `css/apps.css` แล้วแต่ละแอปประกาศแค่ **จานสี 8 ตัวแปร** ที่ราก `.app-<id>` (`--canvas --card --line --ink --dim --a --a-soft --on-a`); แต่ละแอปเลยมีบุคลิกของตัวเอง (Health = จอดำ WHOOP, Weather = กระดาษครีม Acme, Money = ดำ-เขียวมะนาว FinTrack) แต่โครงเหมือนกันหมด
 - **ข้อมูลอยู่ในเครื่องล้วนๆ** — localStorage ต่ออุปกรณ์ ไม่มีเซิร์ฟเวอร์ ไม่มี tracking (More → ดาวน์โหลดข้อมูลทั้งหมดเป็น JSON ได้)
 
 ## รันยังไง

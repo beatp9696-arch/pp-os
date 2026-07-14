@@ -27,9 +27,9 @@ const TABS = [
 
 // แอปที่ไม่มีแท็บของตัวเอง — ไปอยู่ใต้ More
 const MORE_APPS = [
-  ["notes", "จดโน้ต ยาวแค่ไหนก็ได้ เซฟอัตโนมัติ"],
-  ["todo", "รายการงานทั้งหมด (หน้า Me โชว์แค่ 5 อันแรก)"],
-  ["calculator", "เครื่องคิดเลข"],
+  ["notes", "A scratchpad that saves itself"],
+  ["todo", "Every task (Me shows the first five)"],
+  ["calculator", "Quick math"],
 ];
 
 // สีแถบสถานะของมือถือ ให้กลืนกับพื้นหลังของแท็บที่เปิดอยู่
@@ -113,7 +113,7 @@ function renderMore() {
 
   pane.innerHTML = `
     <h1 class="more-h">More</h1>
-    <div class="more-sec">แอปอื่นๆ</div>
+    <div class="more-sec">Apps</div>
     <div class="more-list">
       ${MORE_APPS.map(([id, desc]) => {
         const a = getApp(id);
@@ -124,29 +124,29 @@ function renderMore() {
         </button>`;
       }).join("")}
     </div>
-    <div class="more-sec">ตั้งค่า</div>
+    <div class="more-sec">Settings</div>
     <div class="more-list">
       <button class="more-row" data-act="hk">
         <span class="mr-ico">⌚</span>
-        <span class="mr-txt"><b>เชื่อมกับ Apple Health</b><small>ดึงก้าว/นอน/ออกกำลังกาย จากแอปสุขภาพ ไม่ต้องกรอกเอง</small></span>
+        <span class="mr-txt"><b>Apple Health</b><small>Pull steps, sleep and workouts — stop logging by hand</small></span>
         <span class="mr-chev">${ICONS.chev}</span>
       </button>
       <div class="more-row static">
         <span class="mr-ico">🙂</span>
-        <span class="mr-txt"><b>ชื่อ</b><small>${name || "ยังไม่ได้ตั้ง — ตั้งได้ที่หน้า Me"}</small></span>
+        <span class="mr-txt"><b>Name</b><small>${name || "Not set — add it on the Me tab"}</small></span>
       </div>
       <button class="more-row" data-act="desktop">
         <span class="mr-ico">🖥️</span>
-        <span class="mr-txt"><b>สลับเป็นโหมดเดสก์ท็อป</b><small>หน้าต่าง + taskbar แบบคอมพิวเตอร์</small></span>
+        <span class="mr-txt"><b>Switch to desktop mode</b><small>Draggable windows and a taskbar</small></span>
         <span class="mr-chev">${ICONS.chev}</span>
       </button>
       <button class="more-row" data-act="export">
         <span class="mr-ico">⬇️</span>
-        <span class="mr-txt"><b>ดาวน์โหลดข้อมูลทั้งหมด</b><small>ไฟล์ JSON สำรองไว้ในเครื่อง · ใช้อยู่ ${used} KB</small></span>
+        <span class="mr-txt"><b>Export all data</b><small>A JSON backup on this device · ${used} KB in use</small></span>
         <span class="mr-chev">${ICONS.chev}</span>
       </button>
     </div>
-    <div class="more-foot">PP OS · ข้อมูลทุกอย่างเก็บในเครื่องนี้เท่านั้น ไม่ถูกส่งขึ้นเซิร์ฟเวอร์</div>
+    <div class="more-foot">PP OS · Everything stays on this device. Nothing is sent to a server.</div>
   `;
   view.append(pane);
 

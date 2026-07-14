@@ -36,8 +36,8 @@ export function initTaskbar() {
 function startClock() {
   const el = document.getElementById("clock");
   const tick = () => {
-    el.textContent = new Date().toLocaleTimeString("th-TH", {
-      hour: "2-digit",
+    el.textContent = new Date().toLocaleTimeString("en-US", {
+      hour: "numeric",
       minute: "2-digit",
     });
   };

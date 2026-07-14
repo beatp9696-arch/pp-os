@@ -1,7 +1,7 @@
 // Service worker — precache app shell ทั้งหมด ใช้ offline ได้เต็มตัว
 // เปลี่ยนไฟล์เมื่อไหร่ให้ bump VERSION เพื่อบังคับ cache ใหม่
 
-const VERSION = "pp-os-v6";
+const VERSION = "pp-os-v7";
 
 const SHELL = [
   "./",
@@ -32,14 +32,8 @@ const SHELL = [
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
   "./assets/icons/apple-touch-icon.png",
-  "./assets/fonts/ibm-plex-sans-thai-600-thai.woff2",
-  "./assets/fonts/ibm-plex-sans-thai-600-latin.woff2",
-  "./assets/fonts/ibm-plex-sans-thai-700-thai.woff2",
-  "./assets/fonts/ibm-plex-sans-thai-700-latin.woff2",
-  "./assets/fonts/sarabun-400-thai.woff2",
-  "./assets/fonts/sarabun-400-latin.woff2",
-  "./assets/fonts/sarabun-600-thai.woff2",
-  "./assets/fonts/sarabun-600-latin.woff2",
+  "./assets/fonts/inter-var-latin.woff2",
+  "./assets/fonts/instrument-serif-400-latin.woff2",
   "./assets/fonts/ibm-plex-mono-500-latin.woff2",
 ];
 

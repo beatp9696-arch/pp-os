@@ -1,22 +1,22 @@
 import { load, save } from "../core/storage.js";
-import { countUp } from "../core/ui.js";
+import { countUp, stagger, timeShort } from "../core/ui.js";
 
 // Open-Meteo — ฟรี ไม่ต้องมี API key, CORS เปิด
 // export ไว้ให้หน้า Me ดึงสภาพอากาศมาโชว์ได้โดยไม่ต้องเขียน logic ซ้ำ
-export const DEFAULT_LOC = { lat: 13.7563, lon: 100.5018, label: "กรุงเทพฯ" };
-const DAY_TH = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
+export const DEFAULT_LOC = { lat: 13.7563, lon: 100.5018, label: "Bangkok" };
+const DAY_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const WMO = [
-  [[0], "แจ่มใส", "☀️"],
-  [[1, 2], "เมฆบางส่วน", "🌤️"],
-  [[3], "เมฆมาก", "☁️"],
-  [[45, 48], "หมอก", "🌫️"],
-  [[51, 53, 55, 56, 57], "ฝนปรอย", "🌦️"],
-  [[61, 63, 65, 66, 67], "ฝน", "🌧️"],
-  [[71, 73, 75, 77, 85, 86], "หิมะ", "🌨️"],
-  [[80, 81, 82], "ฝนซู่", "🌧️"],
-  [[95], "ฝนฟ้าคะนอง", "⛈️"],
-  [[96, 99], "พายุลูกเห็บ", "⛈️"],
+  [[0], "Clear", "☀️"],
+  [[1, 2], "Partly cloudy", "🌤️"],
+  [[3], "Overcast", "☁️"],
+  [[45, 48], "Fog", "🌫️"],
+  [[51, 53, 55, 56, 57], "Drizzle", "🌦️"],
+  [[61, 63, 65, 66, 67], "Rain", "🌧️"],
+  [[71, 73, 75, 77, 85, 86], "Snow", "🌨️"],
+  [[80, 81, 82], "Showers", "🌧️"],
+  [[95], "Thunderstorm", "⛈️"],
+  [[96, 99], "Hailstorm", "⛈️"],
 ];
 
 export function describe(code) {
@@ -69,10 +69,12 @@ function hourlyChart(hourly) {
   for (let i = 0; i < 8; i++) {
     const j = start + i * 3;
     if (j >= hourly.time.length) break;
-    raw.push({ h: new Date(hourly.time[j]).getHours(), t: hourly.temperature_2m[j] });
+    const d = new Date(hourly.time[j]);
+    raw.push({ h: d.getHours(), t: hourly.temperature_2m[j] });
   }
   if (raw.length < 3) return "";
 
+  const label = (h) => `${((h + 11) % 12) + 1}${h < 12 ? "am" : "pm"}`;
   const min = Math.min(...raw.map((p) => p.t));
   const max = Math.max(...raw.map((p) => p.t));
   const span = Math.max(1, max - min);
@@ -80,14 +82,14 @@ function hourlyChart(hourly) {
   const H = 104;
   const pts = raw.map((p, i) => ({
     ...p,
-    x: +(20 + (i * (W - 40)) / (raw.length - 1)).toFixed(1),
+    x: +(22 + (i * (W - 44)) / (raw.length - 1)).toFixed(1),
     y: +(32 + (1 - (p.t - min) / span) * 40).toFixed(1),
   }));
 
   const line = smoothPath(pts);
   const area = `${line} L${pts.at(-1).x},${H - 20} L${pts[0].x},${H - 20} Z`;
 
-  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="อุณหภูมิ 24 ชั่วโมงข้างหน้า">
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Temperature over the next 24 hours">
     <defs>
       <linearGradient id="wxg" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" stop-color="currentColor" stop-opacity="0.16"/>
@@ -95,12 +97,12 @@ function hourlyChart(hourly) {
       </linearGradient>
     </defs>
     <path d="${area}" fill="url(#wxg)"/>
-    <path d="${line}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+    <path class="wx-line-path" d="${line}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
     ${pts
       .map(
-        (p, i) => `<circle cx="${p.x}" cy="${p.y}" r="${i === 0 ? 3.6 : 2.6}" fill="currentColor"${i === 0 ? "" : ' opacity="0.55"'}/>
-      <text x="${p.x}" y="${(p.y - 10).toFixed(1)}" text-anchor="middle" font-size="10.5" font-family="IBM Plex Mono, monospace" fill="currentColor">${Math.round(p.t)}°</text>
-      <text x="${p.x}" y="${H - 4}" text-anchor="middle" font-size="9.5" font-family="IBM Plex Mono, monospace" fill="currentColor" opacity="0.45">${String(p.h).padStart(2, "0")}</text>`
+        (p, i) => `<circle cx="${p.x}" cy="${p.y}" r="${i === 0 ? 3.6 : 2.4}" fill="currentColor"${i === 0 ? "" : ' opacity="0.5"'}/>
+      <text x="${p.x}" y="${(p.y - 10).toFixed(1)}" text-anchor="middle" font-size="10.5" font-family="Inter, sans-serif" font-weight="600" fill="currentColor">${Math.round(p.t)}°</text>
+      <text x="${p.x}" y="${H - 4}" text-anchor="middle" font-size="9.5" font-family="IBM Plex Mono, monospace" fill="currentColor" opacity="0.45">${label(p.h)}</text>`
       )
       .join("")}
   </svg>`;
@@ -123,11 +125,11 @@ export default {
           <h1 class="page-title loc"></h1>
         </div>
         <div class="head-actions">
-          <button class="icon-btn use-geo" title="ใช้ตำแหน่งปัจจุบัน" aria-label="ใช้ตำแหน่งปัจจุบัน">📍</button>
-          <button class="icon-btn refresh" title="รีเฟรช" aria-label="รีเฟรช">⟳</button>
+          <button class="icon-btn use-geo" title="Use current location" aria-label="Use current location">📍</button>
+          <button class="icon-btn refresh" title="Refresh" aria-label="Refresh">⟳</button>
         </div>
       </header>
-      <div class="wx-main"><div class="card"><div class="empty">กำลังโหลด…</div></div></div>
+      <div class="wx-main"><div class="card"><div class="empty">Loading…</div></div></div>
     `;
 
     const locEl = body.querySelector(".loc");
@@ -147,7 +149,7 @@ export default {
 
       main.innerHTML = `
         <div class="card">
-          <div class="card-head"><span class="card-title serif" style="font-size:19px">Right Now</span></div>
+          <div class="card-head"><span class="card-title serif">Right Now</span></div>
           <div class="wx-now">
             <span class="emoji">${now.e}</span>
             <div>
@@ -156,29 +158,29 @@ export default {
             </div>
           </div>
           <div class="chips">
-            <span class="chip">รู้สึกเหมือน <b>${Math.round(c.apparent_temperature)}°</b></span>
-            <span class="chip">สูง/ต่ำ <b>${Math.round(d.temperature_2m_max[0])}° / ${Math.round(d.temperature_2m_min[0])}°</b></span>
-            <span class="chip">ความชื้น <b>${c.relative_humidity_2m}%</b></span>
-            <span class="chip">ลม <b>${Math.round(c.wind_speed_10m)}</b> กม./ชม.</span>
+            <span class="chip">Feels like <b>${Math.round(c.apparent_temperature)}°</b></span>
+            <span class="chip">High / Low <b>${Math.round(d.temperature_2m_max[0])}° / ${Math.round(d.temperature_2m_min[0])}°</b></span>
+            <span class="chip">Humidity <b>${c.relative_humidity_2m}%</b></span>
+            <span class="chip">Wind <b>${Math.round(c.wind_speed_10m)}</b> km/h</span>
           </div>
         </div>
 
         ${
           chart
             ? `<div class="card">
-                <div class="card-head"><span class="card-title serif" style="font-size:19px">Next 24 Hours</span></div>
+                <div class="card-head"><span class="card-title serif">Next 24 Hours</span></div>
                 <div class="wx-chart">${chart}</div>
               </div>`
             : ""
         }
 
         <div class="card">
-          <div class="card-head"><span class="card-title serif" style="font-size:19px">Next 6 Days</span></div>
+          <div class="card-head"><span class="card-title serif">Next 6 Days</span></div>
           <div class="list wx-days">
             ${d.time
               .map((t, i) => {
                 const w = describe(d.weather_code[i]);
-                const day = i === 0 ? "วันนี้" : DAY_TH[new Date(t).getDay()];
+                const day = i === 0 ? "Today" : DAY_EN[new Date(t).getDay()];
                 const lo = d.temperature_2m_min[i];
                 const hi = d.temperature_2m_max[i];
                 const left = ((lo - weekMin) / weekSpan) * 100;
@@ -197,9 +199,10 @@ export default {
           </div>
         </div>
 
-        <div class="wx-note">${stale ? "ออฟไลน์ · " : ""}อัปเดต ${new Date(ts).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}</div>
+        <div class="wx-note">${stale ? "Offline · " : ""}Updated ${timeShort(new Date(ts))}</div>
       `;
 
+      stagger(body);
       const tEl = main.querySelector(".wx-now .t");
       if (firstPaint) countUp(tEl, Math.round(c.temperature_2m), { fmt: (n) => `${Math.round(n)}°`, dur: 650 });
       else tEl.textContent = `${Math.round(c.temperature_2m)}°`;
@@ -215,7 +218,7 @@ export default {
         save("weather.cache", { data, ts });
         render(data, ts);
       } catch {
-        if (!cache) main.innerHTML = `<div class="card"><div class="empty">โหลดข้อมูลไม่ได้ — เช็คอินเทอร์เน็ตแล้วกด ⟳</div></div>`;
+        if (!cache) main.innerHTML = `<div class="card"><div class="empty">Couldn't load — check your connection and hit ⟳</div></div>`;
       }
     };
 
@@ -223,10 +226,10 @@ export default {
 
     body.querySelector(".use-geo").addEventListener("click", () => {
       if (!navigator.geolocation) return;
-      locEl.textContent = "กำลังหาตำแหน่ง…";
+      locEl.textContent = "Locating…";
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: "ตำแหน่งของฉัน" };
+          loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, label: "My location" };
           save("weather.loc", loc);
           locEl.textContent = loc.label;
           firstPaint = true;
@@ -234,7 +237,7 @@ export default {
         },
         () => {
           locEl.textContent = loc.label;
-          main.insertAdjacentHTML("beforeend", `<div class="wx-note">เข้าถึงตำแหน่งไม่ได้ — ใช้ ${loc.label} ต่อ</div>`);
+          main.insertAdjacentHTML("beforeend", `<div class="wx-note">Location unavailable — showing ${loc.label}</div>`);
         },
         { timeout: 8000 }
       );

@@ -8,7 +8,7 @@ export default {
   mount(body) {
     body.classList.add("app-notes");
     const ta = document.createElement("textarea");
-    ta.placeholder = "จดอะไรก็ได้… เซฟให้อัตโนมัติ";
+    ta.placeholder = "Write anything… saves itself";
     ta.value = load("notes.text", "");
     ta.addEventListener("input", () => save("notes.text", ta.value));
     body.append(ta);

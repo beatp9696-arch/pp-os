@@ -40,8 +40,8 @@ export function openApp(app) {
     <header class="titlebar">
       <span class="title">${app.icon} ${app.name}</span>
       <span class="controls">
-        <button class="win-btn win-min" title="ย่อ">─</button>
-        <button class="win-btn win-close" title="ปิด">✕</button>
+        <button class="win-btn win-min" title="Minimize" aria-label="Minimize">─</button>
+        <button class="win-btn win-close" title="Close" aria-label="Close">✕</button>
       </span>
     </header>
     <div class="win-body"></div>

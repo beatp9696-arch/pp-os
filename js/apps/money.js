@@ -1,13 +1,37 @@
 import { load, save } from "../core/storage.js";
-import { countUp, flush } from "../core/ui.js";
+import { countUp, flush, stagger, money, money0, dateShort } from "../core/ui.js";
 
 const CATS = {
-  out: [["อาหาร", "🍜"], ["เดินทาง", "🚗"], ["ของใช้", "🛒"], ["บันเทิง", "🎮"], ["สุขภาพ", "💊"], ["อื่นๆ", "📦"]],
-  in: [["เงินเดือน", "💼"], ["ลงทุน", "📈"], ["อื่นๆ", "💵"]],
+  out: [["Food", "🍜"], ["Transport", "🚗"], ["Home", "🛒"], ["Fun", "🎮"], ["Health", "💊"], ["Other", "📦"]],
+  in: [["Salary", "💼"], ["Investments", "📈"], ["Other", "💵"]],
 };
 
-const fmt = (n) => n.toLocaleString("th-TH", { maximumFractionDigits: 2 });
 const RING_C = 2 * Math.PI * 30; // r=30 ใน viewBox 72
+
+// รายการที่บันทึกไว้ตอน UI ยังเป็นไทย ต้องย้ายชื่อหมวดมาเป็นอังกฤษ ไม่งั้นมันจะหลุดจาก CATS
+// (โผล่เป็น • ไม่มี emoji และจับกลุ่มใน breakdown ไม่ตรง)
+const LEGACY_CATS = {
+  อาหาร: "Food",
+  เดินทาง: "Transport",
+  ของใช้: "Home",
+  บันเทิง: "Fun",
+  สุขภาพ: "Health",
+  อื่นๆ: "Other",
+  เงินเดือน: "Salary",
+  ลงทุน: "Investments",
+};
+
+function migrate(entries) {
+  let changed = false;
+  for (const e of entries) {
+    if (LEGACY_CATS[e.cat]) {
+      e.cat = LEGACY_CATS[e.cat];
+      changed = true;
+    }
+  }
+  if (changed) save("money.entries", entries);
+  return entries;
+}
 
 function localDate() {
   const d = new Date();
@@ -21,7 +45,7 @@ export default {
   defaultSize: { w: 430, h: 740 },
   mount(body) {
     body.classList.add("app-pane", "app-money");
-    let entries = load("money.entries", []);
+    let entries = migrate(load("money.entries", []));
     const now = new Date();
     let ym = { y: now.getFullYear(), m: now.getMonth() };
     let filter = "all"; // all | out | in
@@ -31,13 +55,13 @@ export default {
       <header class="page-head">
         <div>
           <div class="eyebrow">PP · Money</div>
-          <h1 class="page-title">การเงิน</h1>
+          <h1 class="page-title">Balance</h1>
         </div>
         <div class="head-actions">
           <div class="month-pick">
-            <button class="prev" aria-label="เดือนก่อนหน้า">‹</button>
+            <button class="prev" aria-label="Previous month">‹</button>
             <span class="m"></span>
-            <button class="next" aria-label="เดือนถัดไป">›</button>
+            <button class="next" aria-label="Next month">›</button>
           </div>
         </div>
       </header>
@@ -45,7 +69,7 @@ export default {
       <div class="card hero">
         <div class="hero-top">
           <div>
-            <div class="k">คงเหลือเดือนนี้</div>
+            <div class="k">Left this month</div>
             <div class="big"></div>
             <div class="note"></div>
           </div>
@@ -58,33 +82,33 @@ export default {
           </div>
         </div>
         <div class="hero-split">
-          <div class="io in"><div class="k"><span class="dot">↓</span>รายรับ</div><div class="v"></div></div>
-          <div class="io out"><div class="k"><span class="dot">↑</span>รายจ่าย</div><div class="v"></div></div>
+          <div class="io in"><div class="k"><span class="dot">↓</span>Income</div><div class="v"></div></div>
+          <div class="io out"><div class="k"><span class="dot">↑</span>Spent</div><div class="v"></div></div>
         </div>
       </div>
 
-      <div class="sec">บันทึกรายการ</div>
+      <div class="sec">Add entry</div>
       <form class="card money-form">
         <div class="row">
-          <input name="amount" type="number" min="0.01" step="0.01" placeholder="จำนวนเงิน (บาท)" required style="flex:1" aria-label="จำนวนเงิน">
-          <select name="type" aria-label="ประเภท"><option value="out">รายจ่าย</option><option value="in">รายรับ</option></select>
+          <input name="amount" type="number" min="0.01" step="0.01" placeholder="Amount (THB)" required style="flex:1" aria-label="Amount">
+          <select name="type" aria-label="Type"><option value="out">Expense</option><option value="in">Income</option></select>
         </div>
         <div class="row">
-          <select name="cat" style="flex:1" aria-label="หมวด"></select>
-          <input name="note" placeholder="โน้ต (ไม่บังคับ)" autocomplete="off" style="flex:1.3">
-          <button class="btn" type="submit">บันทึก</button>
+          <select name="cat" style="flex:1" aria-label="Category"></select>
+          <input name="note" placeholder="Note (optional)" autocomplete="off" style="flex:1.3">
+          <button class="btn" type="submit">Add</button>
         </div>
       </form>
 
-      <div class="sec">รายจ่ายตามหมวด</div>
+      <div class="sec">Spending by category</div>
       <div class="card breakdown"></div>
 
-      <div class="sec">รายการเดือนนี้</div>
+      <div class="sec">Transactions</div>
       <div class="card">
         <div class="seg m-tabs">
-          <button type="button" data-f="all" class="on">ทั้งหมด</button>
-          <button type="button" data-f="out">รายจ่าย</button>
-          <button type="button" data-f="in">รายรับ</button>
+          <button type="button" data-f="all" class="on">All</button>
+          <button type="button" data-f="out">Expense</button>
+          <button type="button" data-f="in">Income</button>
         </div>
         <div class="list entries"></div>
       </div>
@@ -107,7 +131,7 @@ export default {
     };
 
     const update = () => {
-      body.querySelector(".month-pick .m").textContent = new Date(ym.y, ym.m, 1).toLocaleDateString("th-TH", {
+      body.querySelector(".month-pick .m").textContent = new Date(ym.y, ym.m, 1).toLocaleDateString("en-US", {
         month: "short",
         year: "numeric",
       });
@@ -118,11 +142,11 @@ export default {
       const net = sumIn - sumOut;
 
       bigEl.classList.toggle("neg", net < 0);
-      if (firstPaint) countUp(bigEl, net, { fmt: (n) => `฿${fmt(Math.round(n))}` });
-      else bigEl.textContent = `฿${fmt(net)}`;
+      if (firstPaint) countUp(bigEl, net, { fmt: money0 });
+      else bigEl.textContent = money(net);
 
-      body.querySelector(".io.in .v").textContent = `฿${fmt(sumIn)}`;
-      body.querySelector(".io.out .v").textContent = `฿${fmt(sumOut)}`;
+      body.querySelector(".io.in .v").textContent = money(sumIn);
+      body.querySelector(".io.out .v").textContent = money(sumOut);
 
       // วงแหวน "เก็บได้กี่ % ของรายรับ" — เดือนที่ไม่มีรายรับก็ไม่มีอะไรให้วัด
       const dial = body.querySelector(".dial-sm");
@@ -138,11 +162,11 @@ export default {
         dial.querySelector(".c").textContent = `${Math.round(rate * 100)}%`;
         noteEl.textContent =
           net >= 0
-            ? `เก็บได้ ฿${fmt(net)} จากรายรับ ฿${fmt(sumIn)}`
-            : `ใช้เกินรายรับ ฿${fmt(-net)} — ดูรายจ่ายตามหมวดด้านล่าง`;
+            ? `Saved ${money(net)} of ${money(sumIn)} earned`
+            : `Overspent by ${money(-net)} — see the breakdown below`;
       } else {
         dial.classList.add("hidden");
-        noteEl.textContent = rows.length ? "เดือนนี้ยังไม่มีรายรับ" : "ยังไม่มีรายการเดือนนี้";
+        noteEl.textContent = rows.length ? "No income recorded this month" : "Nothing recorded this month yet";
       }
 
       // breakdown — แท่งสีเดียว เรียงมาก→น้อย (identity อยู่ที่ label ไม่ใช่สี)
@@ -156,11 +180,11 @@ export default {
               ([c, a], i) => `<div class="cat-row">
                 <span class="name">${c}</span>
                 <span class="track"><span class="fill" style="width:${(a / maxCat) * 100}%; animation-delay:${i * 45}ms"></span></span>
-                <span class="amt">฿${fmt(a)} · ${Math.round((a / sumOut) * 100)}%</span>
+                <span class="amt">${money(a)} · ${Math.round((a / sumOut) * 100)}%</span>
               </div>`
             )
             .join("")
-        : `<div class="empty">ยังไม่มีรายจ่ายเดือนนี้</div>`;
+        : `<div class="empty">No spending this month</div>`;
 
       const list = body.querySelector(".entries");
       list.innerHTML = "";
@@ -170,10 +194,10 @@ export default {
         row.className = "entry";
         const emoji = (CATS[e.type].find(([c]) => c === e.cat) ?? ["", "•"])[1];
         row.innerHTML = `
-          <span class="d">${new Date(e.date).toLocaleDateString("th-TH", { day: "numeric", month: "short" })}</span>
+          <span class="d">${dateShort(new Date(e.date))}</span>
           <span class="what"></span>
-          <span class="amt ${e.type}">${e.type === "in" ? "+" : "−"}฿${fmt(e.amount)}</span>
-          <button class="x-btn" title="ลบ" aria-label="ลบรายการ">✕</button>
+          <span class="amt ${e.type}">${e.type === "in" ? "+" : "−"}${money(e.amount)}</span>
+          <button class="x-btn" title="Delete" aria-label="Delete entry">✕</button>
         `;
         row.querySelector(".what").textContent = `${emoji} ${e.cat}${e.note ? " · " + e.note : ""}`;
         row.querySelector(".x-btn").addEventListener("click", () => {
@@ -183,7 +207,7 @@ export default {
         });
         list.append(row);
       }
-      if (!visible.length) list.innerHTML = `<div class="empty">ยังไม่มีรายการ</div>`;
+      if (!visible.length) list.innerHTML = `<div class="empty">Nothing here yet</div>`;
 
       firstPaint = false;
     };
@@ -223,6 +247,7 @@ export default {
       update();
     });
 
+    stagger(body);
     flush(body);
     update();
   },

@@ -1,13 +1,12 @@
 import { load, save } from "../core/storage.js";
 import { DEFAULT_LOC, describe, fetchForecast } from "./weather.js";
-import { countUp, flush } from "../core/ui.js";
+import { countUp, flush, stagger, money0, dateLong } from "../core/ui.js";
 
 // หน้า Me — แดชบอร์ดชีวิตวันนี้ อ่านข้อมูลจากทุกแอปมารวมในจอเดียว
 // ทุกการ์ดกดแล้วกระโดดไปแท็บที่ลึกกว่าได้ (ยิง event ให้ shell จัดการ)
 
 const GOAL = { water: 8, ex: 45, sleep: 8, steps: 8000 };
 const RING_C = 2 * Math.PI * 23; // r=23 ใน viewBox 54
-const fmt = (n) => n.toLocaleString("th-TH", { maximumFractionDigits: 0 });
 
 function dayKey(offset = 0) {
   const d = new Date();
@@ -15,7 +14,8 @@ function dayKey(offset = 0) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-const hasData = (rec) => !!rec && (rec.water > 0 || rec.ex > 0 || rec.sleep > 0 || rec.steps > 0 || rec.weight != null || rec.mood != null);
+const hasData = (rec) =>
+  !!rec && (rec.water > 0 || rec.ex > 0 || rec.sleep > 0 || rec.steps > 0 || rec.weight != null || rec.mood != null);
 
 // นับวันติดต่อกันที่บันทึกสุขภาพ — ถ้าวันนี้ยังไม่บันทึก ให้เริ่มนับจากเมื่อวาน (streak ยังไม่ขาด)
 function streakOf(days) {
@@ -30,11 +30,11 @@ function streakOf(days) {
 }
 
 function greet(h) {
-  if (h < 5) return "ดึกแล้ว";
-  if (h < 12) return "สวัสดีตอนเช้า";
-  if (h < 17) return "สวัสดีตอนบ่าย";
-  if (h < 21) return "สวัสดีตอนเย็น";
-  return "ค่ำแล้ว";
+  if (h < 5) return "Up late";
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  if (h < 21) return "Good evening";
+  return "Winding down";
 }
 
 function miniRing(cls, frac, label, center) {
@@ -92,65 +92,65 @@ export default {
         <header class="me-head">
           <div>
             <div class="page-sub">${greet(now.getHours())}</div>
-            <button class="me-name">${name || "ตั้งชื่อของคุณ"}</button>
-            <div class="page-sub">${now.toLocaleDateString("th-TH", { weekday: "long", day: "numeric", month: "long" })}</div>
+            <button class="me-name">${name || "Set your name"}</button>
+            <div class="page-sub">${dateLong(now)}</div>
           </div>
           <div class="me-av">${name ? name.trim().slice(0, 2) : "PP"}</div>
         </header>
 
         <button class="card" data-go="health">
           <div class="card-head">
-            <span class="card-title">สุขภาพวันนี้</span>
-            <span class="card-meta">${logged}/5 ครบ ›</span>
+            <span class="card-title">Health</span>
+            <span class="card-meta">${logged}/5 logged ›</span>
           </div>
           <div class="minis">
-            ${miniRing("sleep", (t.sleep ?? 0) / GOAL.sleep, "นอน", `${t.sleep || 0}`)}
+            ${miniRing("sleep", (t.sleep ?? 0) / GOAL.sleep, "Sleep", `${t.sleep || 0}`)}
             ${
               // มีข้อมูลก้าวจาก Apple Health แล้วให้โชว์ก้าวแทนน้ำ (แม่นกว่า และไม่ต้องกรอกเอง)
               steps > 0
-                ? miniRing("steps", steps / GOAL.steps, "ก้าว", `${Math.round(steps / 100) / 10}k`)
-                : miniRing("water", (t.water ?? 0) / GOAL.water, "น้ำ", `${t.water || 0}`)
+                ? miniRing("steps", steps / GOAL.steps, "Steps", `${Math.round(steps / 100) / 10}k`)
+                : miniRing("water", (t.water ?? 0) / GOAL.water, "Water", `${t.water || 0}`)
             }
-            ${miniRing("ex", (t.ex ?? 0) / GOAL.ex, "ออกกำลัง", `${t.ex || 0}`)}
+            ${miniRing("ex", (t.ex ?? 0) / GOAL.ex, "Exercise", `${t.ex || 0}`)}
           </div>
           <div class="streak">${
-            streak > 0 ? `🔥 บันทึกต่อเนื่อง ${streak} วัน` : "ยังไม่ได้เริ่ม streak — บันทึกวันนี้เลย"
-          }${hasApple ? " · ⌚ ซิงก์จาก Apple Health" : ""}</div>
+            streak > 0 ? `🔥 ${streak}-day logging streak` : "No streak yet — log something today"
+          }${hasApple ? " · ⌚ synced with Apple Health" : ""}</div>
         </button>
 
         <div class="me-duo">
           <button class="card" data-go="weather">
-            <div class="card-title">อากาศ</div>
-            <div class="wx-body"><div class="fin-sub">กำลังโหลด…</div></div>
+            <div class="card-title">Weather</div>
+            <div class="wx-body"><div class="fin-sub">Loading…</div></div>
           </button>
           <button class="card" data-go="money">
-            <div class="card-title">คงเหลือเดือนนี้</div>
+            <div class="card-title">Left this month</div>
             <div class="fin-v ${net < 0 ? "neg" : ""}"></div>
-            <div class="fin-sub">${todayOut > 0 ? `วันนี้ใช้ไป ฿${fmt(todayOut)}` : "วันนี้ยังไม่ได้ใช้เงิน"}</div>
+            <div class="fin-sub">${todayOut > 0 ? `${money0(todayOut)} spent today` : "Nothing spent today"}</div>
           </button>
         </div>
 
         <section class="card">
           <div class="card-head">
-            <span class="card-title">งานวันนี้</span>
-            <span class="card-meta">${undone.length ? `เหลือ ${undone.length}` : "เคลียร์หมดแล้ว 🎉"}</span>
+            <span class="card-title">Tasks</span>
+            <span class="card-meta">${undone.length ? `${undone.length} left` : "all clear 🎉"}</span>
           </div>
           <form class="me-todo-add">
-            <input name="text" placeholder="เพิ่มงาน…" autocomplete="off" aria-label="เพิ่มงาน">
-            <button class="btn" type="submit">เพิ่ม</button>
+            <input name="text" placeholder="Add a task…" autocomplete="off" aria-label="Add a task">
+            <button class="btn" type="submit">Add</button>
           </form>
           <div class="list me-todos"></div>
         </section>
       `;
 
       const finEl = body.querySelector(".fin-v");
-      if (firstPaint) countUp(finEl, net, { fmt: (n) => `฿${fmt(n)}`, dur: 800 });
-      else finEl.textContent = `฿${fmt(net)}`;
+      if (firstPaint) countUp(finEl, net, { fmt: money0, dur: 800 });
+      else finEl.textContent = money0(net);
 
       // ---- งานวันนี้: 5 อันแรกที่ยังไม่เสร็จ ติ๊กได้ในตัว ----
       const listEl = body.querySelector(".me-todos");
       if (!undone.length) {
-        listEl.innerHTML = `<div class="empty">ไม่มีงานค้าง — เพิ่มงานใหม่ได้ด้านบน</div>`;
+        listEl.innerHTML = `<div class="empty">Nothing pending — add one above</div>`;
       } else {
         for (const it of undone.slice(0, 5)) {
           const row = document.createElement("label");
@@ -167,7 +167,7 @@ export default {
           listEl.append(row);
         }
         if (undone.length > 5) {
-          listEl.insertAdjacentHTML("beforeend", `<div class="empty">…และอีก ${undone.length - 5} งาน</div>`);
+          listEl.insertAdjacentHTML("beforeend", `<div class="empty">…and ${undone.length - 5} more</div>`);
         }
       }
 
@@ -188,7 +188,7 @@ export default {
         const input = document.createElement("input");
         input.className = "me-name-input";
         input.value = load("os.name", "");
-        input.placeholder = "ชื่อของคุณ";
+        input.placeholder = "Your name";
         const commit = () => {
           save("os.name", input.value.trim());
           render();
@@ -210,7 +210,7 @@ export default {
         const w = describe(c.weather_code);
         wxBody.innerHTML = `
           <div class="wx-line"><span class="e">${w.e}</span><span class="t">${Math.round(c.temperature_2m)}°</span></div>
-          <div class="fin-sub">${w.t} · สูงสุด ${Math.round(data.daily.temperature_2m_max[0])}°</div>`;
+          <div class="fin-sub">${w.t} · high ${Math.round(data.daily.temperature_2m_max[0])}°</div>`;
       };
       const cached = load("weather.cache");
       if (cached) paint(cached.data);
@@ -220,9 +220,10 @@ export default {
           if (body.isConnected) paint(data);
         })
         .catch(() => {
-          if (!cached && body.isConnected) wxBody.innerHTML = `<div class="fin-sub">ออฟไลน์</div>`;
+          if (!cached && body.isConnected) wxBody.innerHTML = `<div class="fin-sub">Offline</div>`;
         });
 
+      stagger(body);
       firstPaint = false;
     };
 

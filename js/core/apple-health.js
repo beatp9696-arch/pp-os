@@ -127,7 +127,7 @@ async function xmlTextStream(file) {
       break;
     }
   }
-  if (eocd < 0) throw new Error("ไฟล์ zip ไม่ถูกต้อง");
+  if (eocd < 0) throw new Error("That doesn't look like a valid zip file");
 
   const cdSize = tail.getUint32(eocd + 12, true);
   const cdOffset = tail.getUint32(eocd + 16, true);
@@ -151,7 +151,7 @@ async function xmlTextStream(file) {
     }
     p += 46 + nameLen + extraLen + commentLen;
   }
-  if (!entry) throw new Error("ไม่เจอ export.xml ในไฟล์ zip นี้");
+  if (!entry) throw new Error("No export.xml inside this zip");
 
   // local header ยาวไม่คงที่ ต้องอ่าน nameLen/extraLen ของมันเองก่อนถึงจะรู้จุดเริ่มข้อมูล
   const lh = new DataView(await file.slice(entry.localOffset, entry.localOffset + 30).arrayBuffer());
@@ -222,7 +222,7 @@ export function parseHealthJSON(text) {
   if (Array.isArray(src)) for (const row of src) put(row.date ?? row.day, row);
   else for (const [day, o] of Object.entries(src)) put(day, o ?? {});
 
-  if (!Object.keys(out).length) throw new Error("ไม่เจอข้อมูลวันไหนเลยในไฟล์นี้");
+  if (!Object.keys(out).length) throw new Error("No days with data found in this file");
   return out;
 }
 

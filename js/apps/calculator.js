@@ -4,7 +4,7 @@ export default {
   icon: "🧮",
   defaultSize: { w: 280, h: 400 },
   mount(body) {
-    body.classList.add("app-calc");
+    body.classList.add("app-pane", "app-calc"); // app-pane = ชุดตัวแปรสีของ design system
     const keys = ["C", "±", "%", "÷", "7", "8", "9", "×", "4", "5", "6", "−", "1", "2", "3", "+", "0", ".", "="];
     body.innerHTML = `
       <div class="calc-display">0</div>

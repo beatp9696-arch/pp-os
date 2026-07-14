@@ -183,8 +183,18 @@
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   background: var(--card);
-  padding: 15px 16px;
+  padding: 16px;
   box-shadow: var(--elev);
+  /* การ์ดไล่กันเข้ามาทีละใบ — ตาไล่ลำดับความสำคัญจากบนลงล่างเองโดยไม่ต้องคิด */
+  animation: card-in 420ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 55ms);
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
 }
 
 button.card,
@@ -221,9 +231,11 @@ button.card:hover {
 }
 
 .card-meta {
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 11px;
   color: var(--dim);
+  font-variant-numeric: tabular-nums;
 }
 
 /* หัวข้อคั่นส่วน */
@@ -258,7 +270,7 @@ button.card:hover {
 }
 
 .chip b {
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
   font-weight: 500;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -485,11 +497,20 @@ button.card:hover {
 
 .metric-row .lbl {
   flex: 1;
-  font-size: 13.5px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.metric-row .lbl .unit {
+  color: var(--dim);
+  font-weight: 400;
+  font-size: 12.5px;
+  margin-left: 3px;
 }
 
 .metric-row .val {
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 13.5px;
   min-width: 58px;
   text-align: center;
@@ -523,8 +544,10 @@ button.card:hover {
 .weight-input {
   width: 92px;
   text-align: right;
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   padding: 7px 10px !important;
+  font-variant-numeric: tabular-nums;
 }
 
 .mood-seg {
@@ -569,7 +592,8 @@ button.card:hover {
 
 .trend-head .cap {
   color: var(--dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
@@ -827,19 +851,28 @@ body.mode-app .hk-sheet {
 }
 
 .serif {
-  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
-  font-weight: 700;
-  letter-spacing: -0.015em;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 .app-weather .page-title {
-  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 30px;
+}
+
+.app-weather .card-title.serif {
+  font-size: 21px;
+  line-height: 1.2;
 }
 
 .wx-now {
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-top: 6px;
 }
 
 .wx-now .emoji {
@@ -887,7 +920,8 @@ body.mode-app .hk-sheet {
 }
 
 .wx-day .rain {
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 11px;
   color: var(--rain);
   font-variant-numeric: tabular-nums;
@@ -901,7 +935,8 @@ body.mode-app .hk-sheet {
 
 .wx-range .lo,
 .wx-range .hi {
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 11.5px;
   color: var(--dim);
   width: 26px;
@@ -974,12 +1009,14 @@ body.mode-app .hk-sheet {
 }
 
 .month-pick .m {
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 11.5px;
   color: var(--ink);
   padding: 0 8px;
   min-width: 76px;
   text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 .month-pick button {
@@ -1071,7 +1108,8 @@ body.mode-app .hk-sheet {
   inset: 0;
   display: grid;
   place-items: center;
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 12.5px;
   color: var(--a);
   font-variant-numeric: tabular-nums;
@@ -1117,7 +1155,8 @@ body.mode-app .hk-sheet {
 }
 
 .io .v {
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 16px;
   margin-top: 5px;
   font-variant-numeric: tabular-nums;
@@ -1168,7 +1207,8 @@ body.mode-app .hk-sheet {
 }
 
 .cat-row .amt {
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 11.5px;
   color: var(--dim);
   min-width: 84px;
@@ -1186,10 +1226,12 @@ body.mode-app .hk-sheet {
 
 .entry .d {
   color: var(--dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 11px;
   width: 44px;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .entry .what {
@@ -1201,7 +1243,8 @@ body.mode-app .hk-sheet {
 }
 
 .entry .amt {
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
@@ -1333,7 +1376,8 @@ body.mode-app .hk-sheet {
   inset: 0;
   display: grid;
   place-items: center;
-  font-family: var(--font-mono);
+  font-family: var(--font-head);
+  font-weight: 500;
   font-size: 12.5px;
   font-variant-numeric: tabular-nums;
 }
