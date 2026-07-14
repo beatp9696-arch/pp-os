@@ -90,6 +90,10 @@
   background: linear-gradient(160deg, #e9e4d8, #cfc8b6);
 }
 
+.desk-icon[data-app="me"] .glyph {
+  background: linear-gradient(150deg, #d7f0e5, #8fcbb4);
+}
+
 .desk-icon[data-app="notes"] .glyph {
   background: linear-gradient(150deg, #fdeebe, #f0c979);
 }

@@ -1,7 +1,7 @@
 // Service worker — precache app shell ทั้งหมด ใช้ offline ได้เต็มตัว
 // เปลี่ยนไฟล์เมื่อไหร่ให้ bump VERSION เพื่อบังคับ cache ใหม่
 
-const VERSION = "pp-os-v3";
+const VERSION = "pp-os-v4";
 
 const SHELL = [
   "./",
@@ -11,12 +11,15 @@ const SHELL = [
   "./css/desktop.css",
   "./css/window.css",
   "./css/taskbar.css",
+  "./css/shell.css",
   "./css/apps.css",
   "./js/main.js",
   "./js/core/window-manager.js",
   "./js/core/taskbar.js",
+  "./js/core/app-shell.js",
   "./js/core/app-registry.js",
   "./js/core/storage.js",
+  "./js/apps/me.js",
   "./js/apps/notes.js",
   "./js/apps/todo.js",
   "./js/apps/health.js",

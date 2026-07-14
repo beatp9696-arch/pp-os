@@ -1,7 +1,8 @@
 import { load, save } from "../core/storage.js";
 
 // Open-Meteo — ฟรี ไม่ต้องมี API key, CORS เปิด
-const DEFAULT_LOC = { lat: 13.7563, lon: 100.5018, label: "กรุงเทพฯ" };
+// export ไว้ให้หน้า Me ดึงสภาพอากาศมาโชว์ได้โดยไม่ต้องเขียน logic ซ้ำ
+export const DEFAULT_LOC = { lat: 13.7563, lon: 100.5018, label: "กรุงเทพฯ" };
 const DAY_TH = ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"];
 
 const WMO = [
@@ -17,12 +18,12 @@ const WMO = [
   [[96, 99], "พายุลูกเห็บ", "⛈️"],
 ];
 
-function describe(code) {
+export function describe(code) {
   const hit = WMO.find(([codes]) => codes.includes(code));
   return hit ? { t: hit[1], e: hit[2] } : { t: "—", e: "🌡️" };
 }
 
-async function fetchForecast({ lat, lon }) {
+export async function fetchForecast({ lat, lon }) {
   const u = new URL("https://api.open-meteo.com/v1/forecast");
   u.search = new URLSearchParams({
     latitude: lat,

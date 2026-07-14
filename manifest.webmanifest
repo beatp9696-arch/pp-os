@@ -1,10 +1,11 @@
 {
-  "name": "PP OS — web desktop ส่วนตัว",
+  "name": "PP OS — แอปส่วนตัว",
   "short_name": "PP OS",
-  "description": "Web desktop ส่วนตัวสไตล์ Moatrices — Notes, Calculator และแอปอื่นๆ ในหน้าต่างลากได้",
+  "description": "แอปส่วนตัว: Me (สรุปวันนี้), Health, Money, Weather — ข้อมูลเก็บในเครื่อง ใช้ออฟไลน์ได้",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#f7f5f0",
   "theme_color": "#0c6b52",
   "lang": "th",
@@ -12,5 +13,10 @@
     { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Health", "url": "./?mode=app&tab=health", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Money", "url": "./?mode=app&tab=money", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Weather", "url": "./?mode=app&tab=weather", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] }
   ]
 }
